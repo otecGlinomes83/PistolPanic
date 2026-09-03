@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4affdc87a0206e54da4c3253ec9a2ea3, type: 3}
+  m_Name: Map Config
+  m_EditorClassIdentifier: 
+  _arenaSize: {x: 5.625, y: 10}
+  _playerSpawnPoint: {x: 0, y: -4.2}
+  _enemySpawnPoint: {x: 0, y: 4.2}
+  _playerSpawnRotationDegrees: 90
+  _spawnImpulseMin: 1.5
+  _spawnImpulseMax: 3
+  _spawnAngularVelocityMin: -120
+  _spawnAngularVelocityMax: 120
+  _gunCollisionRadius: 0.4
+  _obstacles: []

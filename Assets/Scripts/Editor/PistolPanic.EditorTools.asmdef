@@ -1,0 +1,21 @@
+{
+    "name": "PistolPanic.EditorTools",
+    "rootNamespace": "PistolPanic.EditorTools",
+    "references": [
+        "PistolPanic.Core",
+        "PistolPanic.Presentation",
+        "Unity.InputSystem",
+        "VContainer"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

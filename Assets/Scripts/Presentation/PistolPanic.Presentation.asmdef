@@ -1,0 +1,20 @@
+{
+    "name": "PistolPanic.Presentation",
+    "rootNamespace": "PistolPanic.Presentation",
+    "references": [
+        "PistolPanic.Core",
+        "UniTask",
+        "VContainer",
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
