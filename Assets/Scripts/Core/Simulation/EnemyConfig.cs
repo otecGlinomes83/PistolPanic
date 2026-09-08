@@ -24,10 +24,13 @@ namespace PistolPanic.Core
         private float _fireCooldownMaxSeconds = 2.6f;
 
         [SerializeField]
-        private float _visionConeDegrees = 100f;
+        private float _reactionSeconds = 0.2f;
 
         [SerializeField]
-        private float _visionCheckIntervalSeconds = 0.1f;
+        private float _visibilityDebounceSeconds = 0.3f;
+
+        [SerializeField]
+        private float _visionConeDegrees = 100f;
 
         public IReadOnlyList<float> StageHealths => _stageHealths;
 
@@ -37,8 +40,10 @@ namespace PistolPanic.Core
 
         public float FireCooldownMaxSeconds => _fireCooldownMaxSeconds;
 
-        public float VisionConeDegrees => _visionConeDegrees;
+        public float ReactionSeconds => _reactionSeconds;
 
-        public float VisionCheckIntervalSeconds => _visionCheckIntervalSeconds;
+        public float VisibilityDebounceSeconds => _visibilityDebounceSeconds;
+
+        public float VisionConeDegrees => _visionConeDegrees;
     }
 }

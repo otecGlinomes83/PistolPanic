@@ -5,9 +5,17 @@ namespace PistolPanic.Core
 {
     public sealed class AiShooterSystem
     {
+        private const float InitialInvisibleSeconds = 999f;
+
         private readonly CollisionMath _collisionMath;
 
-        private float _cooldownRemainingSeconds = -1f;
+        private float _randomCooldownSeconds;
+
+        private float _invisibleSeconds = InitialInvisibleSeconds;
+
+        private float _sinceLastShotSeconds = InitialInvisibleSeconds;
+
+        private bool _wasPlayerVisible;
 
         private int _lastStageIndex = -1;
 
@@ -20,29 +28,69 @@ namespace PistolPanic.Core
         {
             if (enemyStageIndex != _lastStageIndex)
             {
-                _lastStageIndex = enemyStageIndex;
-                _cooldownRemainingSeconds = Random.Range(enemyConfig.FireCooldownMinSeconds, enemyConfig.FireCooldownMaxSeconds);
-            }
-
-            _cooldownRemainingSeconds -= fixedDelta;
-
-            if (_cooldownRemainingSeconds > 0f)
-            {
-                return false;
+                OnStageChanged(enemyConfig, enemyStageIndex);
             }
 
             bool isPlayerVisible = IsPlayerVisible(arena, enemyGun, playerGun, enemyConfig);
 
-            if (isPlayerVisible == false)
-            {
-                _cooldownRemainingSeconds = enemyConfig.VisionCheckIntervalSeconds;
+            TickVisibility(fixedDelta, isPlayerVisible, enemyConfig);
 
+            _wasPlayerVisible = isPlayerVisible;
+            _sinceLastShotSeconds += fixedDelta;
+            _randomCooldownSeconds -= fixedDelta;
+
+            if (_randomCooldownSeconds > 0f)
+            {
                 return false;
             }
 
-            _cooldownRemainingSeconds = Random.Range(enemyConfig.FireCooldownMinSeconds, enemyConfig.FireCooldownMaxSeconds);
+            ResetRandomCooldown(enemyConfig);
+            _sinceLastShotSeconds = 0f;
 
             return true;
+        }
+
+        private void OnStageChanged(EnemyConfig enemyConfig, int enemyStageIndex)
+        {
+            _lastStageIndex = enemyStageIndex;
+            _wasPlayerVisible = false;
+            _invisibleSeconds = InitialInvisibleSeconds;
+            _sinceLastShotSeconds = InitialInvisibleSeconds;
+            ResetRandomCooldown(enemyConfig);
+        }
+
+        private void TickVisibility(float fixedDelta, bool isPlayerVisible, EnemyConfig enemyConfig)
+        {
+            if (isPlayerVisible == false)
+            {
+                _invisibleSeconds += fixedDelta;
+
+                return;
+            }
+
+            bool isNewAppearance = _wasPlayerVisible == false && _invisibleSeconds >= enemyConfig.VisibilityDebounceSeconds;
+
+            _invisibleSeconds = 0f;
+
+            if (isNewAppearance == false)
+            {
+                return;
+            }
+
+            if (_sinceLastShotSeconds < enemyConfig.ReactionSeconds)
+            {
+                return;
+            }
+
+            if (_randomCooldownSeconds > enemyConfig.ReactionSeconds)
+            {
+                _randomCooldownSeconds = enemyConfig.ReactionSeconds;
+            }
+        }
+
+        private void ResetRandomCooldown(EnemyConfig enemyConfig)
+        {
+            _randomCooldownSeconds = Random.Range(enemyConfig.FireCooldownMinSeconds, enemyConfig.FireCooldownMaxSeconds);
         }
 
         private bool IsPlayerVisible(ArenaState arena, GunState enemyGun, GunState playerGun, EnemyConfig enemyConfig)

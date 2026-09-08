@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using PistolPanic.Core;
+using PistolPanic.Meta;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,11 +19,21 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly ISceneLoader _sceneLoader = null;
 
+        [Inject]
+        private readonly ProgressService _progressService = null;
+
+        [Inject]
+        private readonly EconomyService _economyService = null;
+
         private GameObject _overlayRoot;
 
         private TMP_Text _titleText;
 
+        private TMP_Text _rewardText;
+
         private TMP_Text _buttonText;
+
+        private string _nextSceneName = SceneNames.Game;
 
         private void Start()
         {
@@ -30,8 +41,6 @@ namespace PistolPanic.Presentation
             _overlayRoot.SetActive(false);
 
             _duelSim.DuelPhaseChanged += OnDuelPhaseChanged;
-
-            Debug.Log("DuelResultOverlay: created");
         }
 
         private void OnDestroy()
@@ -43,18 +52,39 @@ namespace PistolPanic.Presentation
         {
             if (phase == DuelPhase.Victory)
             {
-                ShowOverlay("VICTORY", "NEXT");
+                CompleteVictory();
             }
             else if (phase == DuelPhase.Defeat)
             {
-                ShowOverlay("DEFEAT", "RETRY");
+                CompleteDefeat();
             }
         }
 
-        private void ShowOverlay(string title, string buttonText)
+        private void CompleteVictory()
+        {
+            int reward = _economyService.GetVictoryReward(_progressService.CurrentLevel);
+            _progressService.AdvanceLevel();
+
+            _rewardText.gameObject.SetActive(true);
+            _rewardText.text = "+" + reward;
+
+            ShowOverlay("VICTORY", "SHOP", SceneNames.Shop);
+        }
+
+        private void CompleteDefeat()
+        {
+            _progressService.AdvanceLevel();
+
+            _rewardText.gameObject.SetActive(false);
+
+            ShowOverlay("DEFEAT", "SHOP", SceneNames.Shop);
+        }
+
+        private void ShowOverlay(string title, string buttonText, string nextSceneName)
         {
             _titleText.text = title;
             _buttonText.text = buttonText;
+            _nextSceneName = nextSceneName;
             _overlayRoot.SetActive(true);
         }
 
@@ -86,7 +116,14 @@ namespace PistolPanic.Presentation
             _titleText.fontSize = 110f;
             _titleText.alignment = TextAlignmentOptions.Center;
 
-            GameObject buttonObject = new GameObject("RestartButton", typeof(RectTransform));
+            _rewardText = CreateText(panelObject.transform, "RewardText");
+            SetAnchors(_rewardText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            _rewardText.rectTransform.sizeDelta = new Vector2(600f, 120f);
+            _rewardText.fontSize = 90f;
+            _rewardText.alignment = TextAlignmentOptions.Center;
+            _rewardText.color = new Color(1f, 0.85f, 0.3f, 1f);
+
+            GameObject buttonObject = new GameObject("ContinueButton", typeof(RectTransform));
             buttonObject.transform.SetParent(panelObject.transform, false);
 
             RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
@@ -98,8 +135,8 @@ namespace PistolPanic.Presentation
             Image buttonImage = buttonObject.AddComponent<Image>();
             buttonImage.color = new Color(0.2f, 0.55f, 0.9f, 1f);
 
-            Button restartButton = buttonObject.AddComponent<Button>();
-            restartButton.onClick.AddListener(OnRestartButtonClicked);
+            Button continueButton = buttonObject.AddComponent<Button>();
+            continueButton.onClick.AddListener(OnContinueButtonClicked);
 
             _buttonText = CreateText(buttonObject.transform, "ButtonText");
             SetAnchors(_buttonText.rectTransform, Vector2.zero, Vector2.one);
@@ -127,17 +164,17 @@ namespace PistolPanic.Presentation
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
         }
 
-        private void OnRestartButtonClicked()
+        private void OnContinueButtonClicked()
         {
             _overlayRoot.SetActive(false);
-            RestartDuelAsync().Forget();
+            LoadNextSceneAsync().Forget();
         }
 
-        private async UniTaskVoid RestartDuelAsync()
+        private async UniTaskVoid LoadNextSceneAsync()
         {
             try
             {
-                await _sceneLoader.Load(SceneNames.Game);
+                await _sceneLoader.Load(_nextSceneName);
             }
             catch (OperationCanceledException)
             {

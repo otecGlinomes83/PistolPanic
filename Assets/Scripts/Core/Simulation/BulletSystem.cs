@@ -35,7 +35,7 @@ namespace PistolPanic.Core
 
         private void MoveAndCollide(float fixedDelta, ArenaState arena, GunState playerGun, GunState enemyGun, BulletState bullet)
         {
-            Vector2 previousPosition = bullet.Position;
+            bullet.PreviousPosition = bullet.Position;
             bullet.Position += bullet.Velocity * fixedDelta;
 
             if (IsOutsideArena(arena, bullet))
@@ -46,7 +46,7 @@ namespace PistolPanic.Core
                 return;
             }
 
-            if (HitsObstacle(arena, previousPosition, bullet.Position, bullet.Radius))
+            if (HitsObstacle(arena, bullet.PreviousPosition, bullet.Position, bullet.Radius))
             {
                 bullet.IsAlive = false;
                 bullet.DeathReason = BulletDeathReason.Obstacle;
@@ -54,8 +54,8 @@ namespace PistolPanic.Core
                 return;
             }
 
-            TryHitGun(previousPosition, bullet, playerGun, true);
-            TryHitGun(previousPosition, bullet, enemyGun, false);
+            TryHitGun(bullet.PreviousPosition, bullet, playerGun, true);
+            TryHitGun(bullet.PreviousPosition, bullet, enemyGun, false);
         }
 
         private bool IsOutsideArena(ArenaState arena, BulletState bullet)

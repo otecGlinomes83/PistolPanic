@@ -8,6 +8,8 @@ namespace PistolPanic.Core
 
         public Vector2 Position { get; set; }
 
+        public Vector2 PreviousPosition { get; set; }
+
         public Vector2 Velocity { get; set; }
 
         public float Radius { get; set; }

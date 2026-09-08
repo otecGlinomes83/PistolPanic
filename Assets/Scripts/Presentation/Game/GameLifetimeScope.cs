@@ -66,8 +66,6 @@ namespace PistolPanic.Presentation
             builder.RegisterComponentOnNewGameObject<SimulationDebugOverlay>(Lifetime.Scoped, "SimulationDebugOverlay");
 
             builder.RegisterBuildCallback(ActivateAmbientComponents);
-
-            builder.RegisterComponentInHierarchy<SceneSwapDebugView>();
         }
 
         private void ActivateAmbientComponents(IObjectResolver resolver)

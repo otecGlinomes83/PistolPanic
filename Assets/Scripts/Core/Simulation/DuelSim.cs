@@ -181,25 +181,11 @@ namespace PistolPanic.Core
                 return;
             }
 
-            AimEnemyGunAtPlayer();
-
             float fireAngleRadians = _enemyGun.RotationDegrees * Mathf.Deg2Rad;
             Vector2 fireDirection = new Vector2(Mathf.Cos(fireAngleRadians), Mathf.Sin(fireAngleRadians));
 
             SpawnBullet(_enemyGun, fireDirection, false);
             _movementSystem.ApplyRecoil(_enemyGun, fireDirection, _weaponParams);
-        }
-
-        private void AimEnemyGunAtPlayer()
-        {
-            Vector2 aimDirection = _playerGun.Position - _enemyGun.Position;
-
-            if (aimDirection.sqrMagnitude < 0.0001f)
-            {
-                return;
-            }
-
-            _enemyGun.RotationDegrees = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
         }
 
         private void TickBullets(float fixedDelta)
@@ -289,6 +275,7 @@ namespace PistolPanic.Core
             bullet.Id = _nextBulletId;
             _nextBulletId += 1;
             bullet.Position = ownerGun.Position + fireDirection * spawnOffset;
+            bullet.PreviousPosition = bullet.Position;
             bullet.Velocity = fireDirection * _weaponParams.BulletSpeed;
             bullet.Radius = _weaponParams.BulletRadius;
             bullet.Damage = _weaponParams.Damage;

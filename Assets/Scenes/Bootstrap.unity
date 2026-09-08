@@ -214,6 +214,7 @@ MonoBehaviour:
     TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
+  _economyConfig: {fileID: 11400000, guid: a59800cf21dc2164c8940d9d9133f768, type: 2}
 --- !u!1 &1379458405
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,9 +5,16 @@ namespace PistolPanic.Core
 {
     public sealed class ExplosionSystem
     {
+        private readonly CollisionMath _collisionMath;
+
         private readonly List<ExplosionRecord> _explosionsThisTick = new List<ExplosionRecord>(4);
 
         private readonly List<DamageRequest> _damageRequests = new List<DamageRequest>(4);
+
+        public ExplosionSystem(CollisionMath collisionMath)
+        {
+            _collisionMath = collisionMath;
+        }
 
         public IReadOnlyList<ExplosionRecord> ExplosionsThisTick => _explosionsThisTick;
 
@@ -44,9 +51,15 @@ namespace PistolPanic.Core
         private void TryExplodePair(BulletState firstBullet, BulletState secondBullet, GunState playerGun, GunState enemyGun, ExplosionConfig explosionConfig)
         {
             float combinedRadius = firstBullet.Radius + secondBullet.Radius;
-            Vector2 offset = secondBullet.Position - firstBullet.Position;
 
-            if (offset.sqrMagnitude > combinedRadius * combinedRadius)
+            bool isCollision = _collisionMath.SegmentIntersectsCircle(firstBullet.PreviousPosition, firstBullet.Position, secondBullet.Position, combinedRadius);
+
+            if (isCollision == false)
+            {
+                isCollision = _collisionMath.SegmentIntersectsCircle(secondBullet.PreviousPosition, secondBullet.Position, firstBullet.Position, combinedRadius);
+            }
+
+            if (isCollision == false)
             {
                 return;
             }
