@@ -12,9 +12,9 @@ namespace PistolPanic.Presentation
 
         protected override void Awake()
         {
-            DontDestroyOnLoad(gameObject);
-
             base.Awake();
+
+            DontDestroyOnLoad(gameObject);
         }
 
         protected sealed override void Configure(IContainerBuilder builder)

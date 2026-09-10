@@ -177,6 +177,20 @@ GameplayLifecyclePresenter, BulletMovedSnapshot; враг стреляет те�
 
 ## ЖУРНАЛ СЕССИЙ
 
+### 2026-09-10 (2) — агент: opencode — фикс: VContainerException на бутстрапе
+**Баг (лог владельца):** `VContainerException: Bootstrapper is not in this
+scene DontDestroyOnLoad` → билд project-скоупа падал → все [Inject]
+Bootstrapper null (`sceneLoader=False platform=False`) → NRE в Start.
+**Причина:** рефакторинг (запись 2026-09-09/10) перенёс DDOL в
+`ProjectLifetimeScope.Awake()`, но ПОСТАВИЛ его ДО `base.Awake()`. VContainer
+внутри `base.Awake()` захватывает `gameObject.scene` и строит контейнер —
+после DDOL сценой объекта была псевдо-сцена «DontDestroyOnLoad», и
+`RegisterComponentInHierarchy<Bootstrapper>` искал компонент там, а не в
+Bootstrap.
+**Фикс:** `base.Awake()` → затем `DontDestroyOnLoad(gameObject)`. Интент
+предыдущего агента сохранён (скоуп персистентен), порядок исправлен.
+**Дальше:** ждать указаний.
+
 ### 2026-09-09/10 — агент: Claude Code (Claude Code CLI) — ревью + рефакторинг по SOLID (ЗАВЕРШЕНО)
 **Итог: 36 файлов изменено (+556/−335), 12 новых, сцены Bootstrap дополнена.**
 Полный список решений и отклонённых находок — в записи выше (разделы
