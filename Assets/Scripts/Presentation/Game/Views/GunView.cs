@@ -8,18 +8,19 @@ namespace PistolPanic.Presentation
     {
         private const float ViewScale = 0.8f;
 
+        private SpriteRenderer _spriteRenderer;
+
         public void Initialize(Sprite gunSprite, Color gunColor)
         {
-            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = gunSprite;
-            spriteRenderer.color = gunColor;
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _spriteRenderer.sprite = gunSprite;
+            _spriteRenderer.color = gunColor;
             transform.localScale = new Vector3(ViewScale, ViewScale, 1f);
         }
 
         public void SetColor(Color gunColor)
         {
-            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteRenderer.color = gunColor;
+            _spriteRenderer.color = gunColor;
         }
 
         public void ApplySnapshot(GunSnapshot snapshot)

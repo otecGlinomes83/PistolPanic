@@ -4,11 +4,19 @@ namespace PistolPanic.Core
 {
     public sealed class MovementSystem
     {
+        private const float TorqueSignThreshold = 0.5f;
+
         private readonly PhysicsConfig _physicsConfig;
 
-        public MovementSystem(PhysicsConfig physicsConfig)
+        private readonly CollisionMath _collisionMath;
+
+        private readonly WeaponParams _weaponParams;
+
+        public MovementSystem(PhysicsConfig physicsConfig, CollisionMath collisionMath, WeaponParams weaponParams)
         {
             _physicsConfig = physicsConfig;
+            _collisionMath = collisionMath;
+            _weaponParams = weaponParams;
         }
 
         public void Tick(float fixedDelta, ArenaState arena, GunState gun)
@@ -31,7 +39,7 @@ namespace PistolPanic.Core
 
             gun.Velocity *= linearFactor;
 
-            if (gun.Velocity.magnitude < _physicsConfig.MinLinearSpeedUnits)
+            if (gun.Velocity.sqrMagnitude < _physicsConfig.MinLinearSpeedUnits * _physicsConfig.MinLinearSpeedUnits)
             {
                 gun.Velocity = Vector2.zero;
             }
@@ -51,14 +59,14 @@ namespace PistolPanic.Core
             }
         }
 
-        public void ApplyRecoil(GunState gun, Vector2 fireDirection, WeaponParams weaponParams)
+        public void ApplyRecoil(GunState gun, Vector2 fireDirection)
         {
-            gun.Velocity -= fireDirection * weaponParams.RecoilImpulse;
+            gun.Velocity -= fireDirection * _weaponParams.RecoilImpulse;
 
-            float torqueMagnitude = Random.Range(weaponParams.RecoilTorqueMinDegrees, weaponParams.RecoilTorqueMaxDegrees);
+            float torqueMagnitude = Random.Range(_weaponParams.RecoilTorqueMinDegrees, _weaponParams.RecoilTorqueMaxDegrees);
             float torqueSign;
 
-            if (Random.value < 0.5f)
+            if (Random.value < TorqueSignThreshold)
             {
                 torqueSign = -1f;
             }
@@ -140,23 +148,14 @@ namespace PistolPanic.Core
         private void ResolveObstacleCollision(ObstacleData obstacle, GunState gun)
         {
             float combinedRadius = obstacle.Radius + gun.Radius;
-            Vector2 offset = gun.Position - obstacle.Center;
+            Vector2 normal;
+            float overlap;
 
-            if (offset.sqrMagnitude >= combinedRadius * combinedRadius)
+            bool isOverlapping = _collisionMath.TryGetCircleOverlap(obstacle.Center, gun.Position, combinedRadius, out normal, out overlap);
+
+            if (isOverlapping == false)
             {
                 return;
-            }
-
-            float offsetMagnitude = offset.magnitude;
-            Vector2 normal;
-
-            if (offsetMagnitude < 0.00001f)
-            {
-                normal = Vector2.up;
-            }
-            else
-            {
-                normal = offset / offsetMagnitude;
             }
 
             Vector2 position = obstacle.Center + normal * combinedRadius;
@@ -175,26 +174,16 @@ namespace PistolPanic.Core
         public void ResolveGunPairCollision(GunState firstGun, GunState secondGun)
         {
             float combinedRadius = firstGun.Radius + secondGun.Radius;
-            Vector2 offset = firstGun.Position - secondGun.Position;
+            Vector2 normal;
+            float overlap;
 
-            if (offset.sqrMagnitude >= combinedRadius * combinedRadius)
+            bool isOverlapping = _collisionMath.TryGetCircleOverlap(secondGun.Position, firstGun.Position, combinedRadius, out normal, out overlap);
+
+            if (isOverlapping == false)
             {
                 return;
             }
 
-            float offsetMagnitude = offset.magnitude;
-            Vector2 normal;
-
-            if (offsetMagnitude < 0.00001f)
-            {
-                normal = Vector2.up;
-            }
-            else
-            {
-                normal = offset / offsetMagnitude;
-            }
-
-            float overlap = combinedRadius - offsetMagnitude;
             float halfOverlap = overlap * 0.5f;
             firstGun.Position += normal * halfOverlap;
             secondGun.Position -= normal * halfOverlap;

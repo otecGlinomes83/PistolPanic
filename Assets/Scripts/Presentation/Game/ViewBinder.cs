@@ -16,9 +16,6 @@ namespace PistolPanic.Presentation
         private readonly IBulletPool _bulletPool = null;
 
         [Inject]
-        private readonly IPlatformLifecycle _platformLifecycle = null;
-
-        [Inject]
         private readonly EnemyConfig _enemyConfig = null;
 
         private GunView _playerGunView;
@@ -34,9 +31,6 @@ namespace PistolPanic.Presentation
             _duelSim.BulletSpawned += OnBulletSpawned;
             _duelSim.BulletUpdated += OnBulletUpdated;
             _duelSim.BulletRemoved += OnBulletRemoved;
-            _duelSim.ExplosionHappened += OnExplosionHappened;
-            _duelSim.GunHit += OnGunHit;
-            _duelSim.DuelPhaseChanged += OnDuelPhaseChanged;
             _duelSim.EnemyStageChanged += OnEnemyStageChanged;
 
             Debug.Log("ViewBinder: gun views created and subscribed");
@@ -49,9 +43,6 @@ namespace PistolPanic.Presentation
             _duelSim.BulletSpawned -= OnBulletSpawned;
             _duelSim.BulletUpdated -= OnBulletUpdated;
             _duelSim.BulletRemoved -= OnBulletRemoved;
-            _duelSim.ExplosionHappened -= OnExplosionHappened;
-            _duelSim.GunHit -= OnGunHit;
-            _duelSim.DuelPhaseChanged -= OnDuelPhaseChanged;
             _duelSim.EnemyStageChanged -= OnEnemyStageChanged;
         }
 
@@ -72,18 +63,6 @@ namespace PistolPanic.Presentation
             gunView.Initialize(gunSprite, gunColor);
 
             return gunView;
-        }
-
-        private void OnDuelPhaseChanged(DuelPhase phase)
-        {
-            if (phase == DuelPhase.Armed)
-            {
-                _platformLifecycle.GameplayStop();
-            }
-            else
-            {
-                _platformLifecycle.GameplayStart();
-            }
         }
 
         private void OnEnemyStageChanged(int stageIndex)
@@ -111,7 +90,7 @@ namespace PistolPanic.Presentation
             _bulletPool.Spawn(snapshot.BulletId, snapshot.Position, snapshot.Diameter);
         }
 
-        private void OnBulletUpdated(BulletSpawnedSnapshot snapshot)
+        private void OnBulletUpdated(BulletMovedSnapshot snapshot)
         {
             _bulletPool.Move(snapshot.BulletId, snapshot.Position);
         }
@@ -119,27 +98,6 @@ namespace PistolPanic.Presentation
         private void OnBulletRemoved(int bulletId)
         {
             _bulletPool.Despawn(bulletId);
-        }
-
-        private void OnExplosionHappened(ExplosionRecord record)
-        {
-            Debug.Log("ViewBinder: explosion at " + record.Position + " radius " + record.Radius);
-        }
-
-        private void OnGunHit(GunHitRecord record)
-        {
-            string targetName;
-
-            if (record.TargetIsPlayer)
-            {
-                targetName = "player";
-            }
-            else
-            {
-                targetName = "enemy";
-            }
-
-            Debug.Log("ViewBinder: hit " + targetName + ", damage " + record.Damage + ", health left " + record.HealthAfter);
         }
     }
 }

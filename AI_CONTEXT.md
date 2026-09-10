@@ -33,6 +33,18 @@ RewardedAdv, Leaderboards, Metrica, Authorization). Без физдвижка.
 
 ## СНИМОК СОСТОЯНИЯ (полное чтение кода, 53 скрипта, коммит `2962cd9`)
 
+**[правка 2026-09-10, после рефакторинга — часть пунктов ниже устарела, см.
+ЖУРНАЛ 2026-09-09/10]:** FireSystem больше НЕ пустой — владеет всей
+стрельбой (игрок и враг) и AmmoState игрока; BulletSystem владеет
+контейнером пуль; DuelSim — оркестратор+публикатор (реплей DuelPhaseChanged
+удалён, подписчики слушают DuelFlow.PhaseChanged напрямую). Поражение тоже
+ведёт в SHOP (запись (6) ниже актуальна, «NEXT → Game» тут устарело).
+Цифры баланса в этом снапшоте НЕ истина: владелец крутит ассеты
+Assets/Configs в ходе тестов. Появились: SimulationConfig (тикрейт/шаги/фпс,
+ассет назначен на YgProjectLifetimeScope в Bootstrap.unity), MatchResultApplier,
+GameplayLifecyclePresenter, BulletMovedSnapshot; враг стреляет теперь через
+общий FireSystem.TryFire.
+
 ### Сцены и скоупы
 - `Bootstrap` → `YgProjectLifetimeScope` (наследник `ProjectLifetimeScope`,
   биндит `IPlatformLifecycle → YgLifecycleAdapter`, EconomyConfig →
@@ -164,6 +176,167 @@ RewardedAdv, Leaderboards, Metrica, Authorization). Без физдвижка.
 ---
 
 ## ЖУРНАЛ СЕССИЙ
+
+### 2026-09-09/10 — агент: Claude Code (Claude Code CLI) — ревью + рефакторинг по SOLID (ЗАВЕРШЕНО)
+**Итог: 36 файлов изменено (+556/−335), 12 новых, сцены Bootstrap дополнена.**
+Полный список решений и отклонённых находок — в записи выше (разделы
+«Ревью завершено», «Решения владельца», «Рефакторинг», «Отклонённые находки»).
+
+**Исправленные баги (все подтверждены владельцем):**
+- Взрыв пуля×пуля домаживал того, кто ДАЛЬШЕ (флаги цели инвертированы) →
+  теперь домажит того, кто в радиусе (оба в радиусе — оба, как в дизайне).
+- Мёртвая пуля больше не цепляет взрывы в том же тике (был двойной урон).
+- GunHit/ExplosionHappened больше не репаблишатся после конца боя.
+- ИИ: смена стадии и старт боя больше не дают мгновенного выстрела
+  (визибилити-гистерезис не сбрасывается; первое появление считается
+  только после 0.3с реальной невидимости).
+- SceneLoader: гвард от двойной загрузки + блок кликов на фейде +
+  unscaled-время (фейд не замрёт при паузе).
+- Boot: таймаут 10с на YG SDK с LogError; fail-fast при отсутствии
+  EconomyConfig; fail-fast Parent==null в игровых скоупах.
+- Сим-аккумулятор clamp вместо сброса (при лагах время не теряется).
+- Инпут: [DefaultExecutionOrder(-100)] — нажатие сэмплируется до сим-тика.
+- Взрыв: радиус поражения учитывает радиус пушки.
+
+**Структура (B5 + SOLID, поведение то же):**
+- FireSystem владеет стрельбой и AmmoState игрока; TryFire(gun, isPlayer)
+  — один код выстрела на обе стороны; PlayerAmmo наружу для будущего HUD (B4).
+- BulletSystem владеет контейнером пуль, спавном (muzzle offset из
+  WeaponConfig.BulletSpawnOffsetUnits) и per-tick diff-списками
+  (Spawned/Moved/Removed) вместо WasAlive; пре-варм 64 состояний (zero-GC).
+- DuelSim 380 → ~280 строк: только оркестрация и публикация; батчи
+  событий очищаются в конце PublishEvents.
+- DuelFlow владеет fight-clock (FightElapsedSeconds) — i-frames считают по нему.
+- MatchResultApplier (Core/Meta): награда/уровень больше не во вью;
+  DuelResultOverlayView только рендерит.
+- GameplayLifecyclePresenter: GameplayStart/Stop выделен из ViewBinder;
+  ViewBinder — только вью и подписки.
+- DI: WeaponParams registered as instance; ExplosionSystem/MovementSystem/
+  BulletSystem/FireSystem — конфиги и коллабораторов через конструктор;
+  SpriteFactory → Singleton в project scope (текстуры больше не текут при
+  перезагрузках Game); DDOL перенесён в ProjectLifetimeScope.Awake;
+  SimulationDebugOverlay под #if UNITY_EDITOR (не попадает в WebGL-билд).
+- SimulationConfig SO (60 тиков / 3 шага / 60 fps) — ассет назначен на
+  YgProjectLifetimeScope в Bootstrap.unity (проведено в YAML, вручную
+  ничего назначать не надо).
+- Конфиги: WeaponConfig.BulletSpawnOffsetUnits (0.05), MapConfig.EnemySpawnRotationDegrees
+  (270) — ассеты дополнены; в ассеты дописаны ранее несериализованные
+  _gracePeriodSeconds: 1 и _visibilityDebounceSeconds: 0.3.
+- Переименования: IsTargetPlayer / IsPlayerOwned (больше не путаются флаги).
+
+**Ждёт владельца (ручные шаги):**
+1. Открыть Unity, дождаться импорта/компиляции, запустить Bootstrap:
+   выстрелы, взрывы (теперь домажит того, кто в радиусе!), стадии врага
+   (без мгновенных выстрелов после пробития), повторные клики по кнопкам.
+2. Unity-компиляцию я проверить не мог (нет редактора в этой среде) —
+   если что-то не соберётся, писать мне.
+3. Player Settings → Company Name (сейчас DefaultCompany).
+4. `.claude/skills/` — 7 официальных Unity-скиллов; решить, коммитить ли
+   в репо или убрать.
+
+**Дальше:** ждать указаний; по плану PHASES_README — B1/B4 (FX + HUD-событие
+патронов; PlayerAmmo уже проброшен наружу через FireSystem) → Ф4 парирование.
+
+### 2026-09-09 — агент: Claude Code (Claude Code CLI) — ревью + рефакторинг по SOLID (В ПРОЦЕССЕ)
+**Задача владельца:** тщательное ревью и рефакторинг, чтобы всё было по SOLID и
+по AI_RULES. Логику не менять без явного вопроса владельцу. Лимит саб-агентов
+20–30 на всю сессию. Мысли по ходу — вести в этом файле.
+**Сделано:**
+- Установлены официальные Unity-скиллы (github.com/Unity-Technologies/skills)
+  в `.claude/skills/`: optimize-web, ui-ugui, optimize-text-mesh-pro,
+  unity-cli, manage-sprite-atlas, unity-package-management, build-live-game.
+  В git пока НЕ закоммичены — владелец решает, оставлять ли в репо.
+- Перечитаны AI_RULES.md, PHASES_README.txt, этот файл, DuelSim.cs.
+**План:**
+1. Workflow-ревью (6 ревьюеров: кодстайл AI_RULES / SOLID-SRP / баги /
+   GC-перф / VContainer+UniTask / монтировка сцен-ассетов-asmdef) →
+   кластерная адверсариальная верификация каждой находки.
+2. Вопросы владельцу по пунктам, где правка меняет логику.
+3. Рефакторинг workflow'ом: только стиль/структура (правки логики —
+   только после ответа владельца).
+4. Контр-ревью после правок + чек-лист AI_RULES + итоговая запись здесь.
+**Мысли:** план PHASES_README B5 (вынос стрельбы из DuelSim → FireSystem)
+сам по себе меняет структуру, но НЕ поведение — попадает в рефакторинг,
+но подтвержжу у владельца вместе с остальными вопросами.
+**Ревью завершено (workflow, 4 линзы + добивочная верификация): 75 подтверждённых
+находок. Ключевые:**
+- CRITICAL: ExplosionSystem передаёт флаги цели наоборот — взрыв у игрока
+  домажит врага и наоборот. Когда в радиусе оба — выглядит правильно
+  («домажит обоих»), поэтому не замечали.
+- Мёртвые пули цепляют взрывы в том же тике (двойной урон).
+- После Victory/Defeat GunHit/Explosion репаблишатся каждый тик.
+- Смена стадии врага сбрасывает визибилити-гистерезис ИИ → мгновенный
+  выстрел после каждой стадии и в начале боя (владелец подтвердил: баг).
+- SceneLoader без гварда от повторного входа; boot без таймаута SDK;
+  сим-аккумулятор сбрасывает остаток при лагах (бой растягивается).
+- Codebase в целом чистый по AI_RULES; главный структурный candidate — B5.
+**Решения владельца (2026-09-09):**
+1. Взрыв — «домажит обоих в радиусе» = чинить инверсию флагов (фикс даёт
+   ровно это поведение).
+2. Оба бага событий симуляции — чинить.
+3. Стадийный сброс ИИ — баг, чинить (гистерезис не сбрасывать; старт
+   боя не считать «появлением»).
+4. Баланс: ассеты = живая правда, владелец крутит их в тестах; цифры
+   доков не истина — НЕ выравнивать ассеты под документацию.
+5. «Все фикси» robustness: SceneLoader гвард + unscaled фейд, boot
+   таймаут SDK + fail-fast, clamp аккумулятора, радиус взрыва + пушки.
+6. Сим-цикл ОСТАЁТСЯ на MonoBehaviour.Update (проще, для WebGL надёжнее).
+   Правило AI_RULES «тик систем через UniTask» — санкционированное
+   исключение для SimulationDriver.
+7. «Делай как можно проще, но со вкусом» — без спекулятивных абстракций.
+**Рефакторинг (workflow, 4 последовательных батча + аудит):**
+- Батч 1: баги симуляции (инверсия взрыва, цепные взрывы мёртвых пуль,
+  гистерезис ИИ, clamp аккумулятора, [DefaultExecutionOrder] инпута) +
+  переименования IsTargetPlayer/IsPlayerOwned.
+- Батч 2 (B5): FireSystem владеет стрельбой (общая для игрока/врага),
+  BulletSystem владеет контейнером пуль + diff-списки вместо WasAlive,
+  DuelSim — чистый оркестратор; WeaponParams/ArenaState через DI;
+  fight-clock в DuelFlow; релей DuelPhaseChanged удалён.
+- Батч 3: MatchResultApplier (деньги/уровень из вью), GameplayLifecyclePresenter,
+  SceneLoader гвард, boot таймаут/fail-fast, SpriteFactory Singleton,
+  DDOL в скоуп, fail-fast Parent==null, дебаг-оверлей под #if UNITY_EDITOR.
+- Батч 4: SimulationConfig SO (тикрейт/шаги/фпс), поля конфигов вместо
+  магических чисел (muzzle offset, поворот врага), константы эпсилонов,
+  sqrMagnitude, пре-варм пуль, чистка логов Core, YAML-доводка ассетов.
+- Аудит: адверсариальная проверка диффа против AI_RULES + графов DI.
+**Отклонённые находки ревью (с причинами, чтобы не всплывали снова):**
+- Удалить WeaponParams — НЕТ (роадмап Ф5/Ф7 прямо расширяет его).
+- Удалить ISceneLoader/IBulletPool — НЕТ (роадмап добавляет порты
+  ISaveService/IAudioService/IAdsService; паттерн портов sanctioned).
+- Удалить ProgressService.LevelChanged — НЕТ (подписчик придёт с HUD, B4/F6).
+- Перенести PlatformYG в Presentation-asmdef — НЕВОЗМОЖНО: у PluginYG2 нет
+  asmdef, его код в Assembly-CSharp, из asmdef на него не сослаться.
+  Штатная интеграция PluginYG2 — адаптеры живут в Assembly-CSharp.
+- EditorTools asmdef пустой — оставить (скелет Ф0).
+- GunHealthState/TickRateMeter/VisualConfig/grace→DuelConfig — отложено
+  (принцип владельца «как можно проще»; цвета — плейсхолдеры до арт-паса).
+- Стены арены за фрустумом камеры (орто 5, стены на ±5.125) — заметка
+  для арт-паса, не трогали.
+- companyName DefaultCompany — ручной шаг владельца в Player Settings.
+**Наблюдения по собственному чтению кода (все 50+ файлов Assets/Scripts):**
+- Кодстайл проекта в целом соблюдает AI_RULES очень чисто (нет var,
+  нет комментариев, скобки с новой строки, `== false`, sealed, именованные
+  обработчики событий, SO — чистые данные, нет статики кроме const).
+- Сцен-виринг здоров: все 7 конфиг-ассетов существуют и подключены
+  (Bootstrap: Economy Config на YgProjectLifetimeScope; Game: Map/Pistol/
+  Bullet Explosion/Physics/Player/Enemy на GameLifetimeScope).
+  SceneSwapDebugView из Game.unity владелец удалил (GUID в Game=0, в Shop=1) —
+  пункты «Ждёт владельца» из записи 2026-09-08 (5) закрыты.
+- Кандидаты в вопросы владельцу (меняют логику, без его слова не трогать):
+  1) SceneLoader.Load без защиты от повторного входа — спам по кнопке
+     SHOP/свап = двойная загрузка сцены (фикс — гвард, меняет поведение).
+  2) AiShooterSystem.OnStageChanged сбрасывает визибилити-гистерезис →
+     после каждого пробития стадии следующий видимый тик считается
+     «появлением» и режет КД до ReactionSeconds (враг стреляет быстрее
+     после смены стадии). Дизайн или побочка?
+  3) ExplosionSystem взрывает ЛЮБЫЕ пары пуль, включая свои-свои (известный
+     вопрос №4) + CheckDeaths при одновременной смерти обоих отдаёт Victory.
+  4) Враг стреляет _weaponParams ИГРОКА (общий WeaponConfig на обоих) —
+     по Ф5 разойдётся, сейчас это дизайн?
+  5) B5-рефактор: fire-логика DuelSim → FireSystem + выделение
+     bullet-spawner'а/even-publisher'а.
+  6) DuelResultOverlayView считает награду и AdvanceLevel внутри вью —
+     вынести в Meta-сервис/flow (структура, поведение то же).
 
 ### 2026-09-08 (6) — агент: opencode — поражение через магазин + двойные выстрелы ИИ
 **Сделано:**

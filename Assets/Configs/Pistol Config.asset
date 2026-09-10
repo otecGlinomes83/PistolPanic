@@ -22,3 +22,4 @@ MonoBehaviour:
   _recoilImpulse: 2
   _recoilTorqueMinDegrees: 30
   _recoilTorqueMaxDegrees: 90
+  _bulletSpawnOffsetUnits: 0.05

@@ -15,12 +15,11 @@ namespace PistolPanic.Presentation
             Debug.Log("Scope: platform services (YG)");
 
             builder.Register<YgLifecycleAdapter>(Lifetime.Singleton).As<IPlatformLifecycle>();
+            builder.Register<SpriteFactory>(Lifetime.Singleton);
 
             if (_economyConfig == null)
             {
-                Debug.LogError("YgProjectLifetimeScope: EconomyConfig is not assigned. Create asset (Create → PistolPanic → EconomyConfig) and assign on YgProjectLifetimeScope in Bootstrap scene.");
-
-                return;
+                throw new VContainerException(typeof(EconomyConfig), "YgProjectLifetimeScope: EconomyConfig is not assigned. Create asset (Create → PistolPanic → EconomyConfig) and assign on YgProjectLifetimeScope in Bootstrap scene.");
             }
 
             builder.RegisterInstance(_economyConfig);

@@ -14,16 +14,10 @@ namespace PistolPanic.Presentation
         private const int OverlaySortingOrder = 500;
 
         [Inject]
-        private readonly DuelSim _duelSim = null;
-
-        [Inject]
         private readonly ISceneLoader _sceneLoader = null;
 
         [Inject]
-        private readonly ProgressService _progressService = null;
-
-        [Inject]
-        private readonly EconomyService _economyService = null;
+        private readonly MatchResultApplier _matchResultApplier = null;
 
         private GameObject _overlayRoot;
 
@@ -40,44 +34,29 @@ namespace PistolPanic.Presentation
             CreateOverlay();
             _overlayRoot.SetActive(false);
 
-            _duelSim.DuelPhaseChanged += OnDuelPhaseChanged;
+            _matchResultApplier.MatchFinished += OnMatchFinished;
         }
 
         private void OnDestroy()
         {
-            _duelSim.DuelPhaseChanged -= OnDuelPhaseChanged;
+            _matchResultApplier.MatchFinished -= OnMatchFinished;
         }
 
-        private void OnDuelPhaseChanged(DuelPhase phase)
+        private void OnMatchFinished(MatchResult result)
         {
-            if (phase == DuelPhase.Victory)
+            if (result.Phase == DuelPhase.Victory)
             {
-                CompleteVictory();
+                _rewardText.gameObject.SetActive(true);
+                _rewardText.text = "+" + result.Reward;
+
+                ShowOverlay("VICTORY", "SHOP", SceneNames.Shop);
             }
-            else if (phase == DuelPhase.Defeat)
+            else if (result.Phase == DuelPhase.Defeat)
             {
-                CompleteDefeat();
+                _rewardText.gameObject.SetActive(false);
+
+                ShowOverlay("DEFEAT", "SHOP", SceneNames.Shop);
             }
-        }
-
-        private void CompleteVictory()
-        {
-            int reward = _economyService.GetVictoryReward(_progressService.CurrentLevel);
-            _progressService.AdvanceLevel();
-
-            _rewardText.gameObject.SetActive(true);
-            _rewardText.text = "+" + reward;
-
-            ShowOverlay("VICTORY", "SHOP", SceneNames.Shop);
-        }
-
-        private void CompleteDefeat()
-        {
-            _progressService.AdvanceLevel();
-
-            _rewardText.gameObject.SetActive(false);
-
-            ShowOverlay("DEFEAT", "SHOP", SceneNames.Shop);
         }
 
         private void ShowOverlay(string title, string buttonText, string nextSceneName)

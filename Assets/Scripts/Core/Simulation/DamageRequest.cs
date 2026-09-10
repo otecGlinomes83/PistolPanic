@@ -1,16 +1,14 @@
-using UnityEngine;
-
 namespace PistolPanic.Core
 {
     public readonly struct DamageRequest
     {
-        public DamageRequest(bool targetIsPlayer, float damage)
+        public DamageRequest(bool isTargetPlayer, float damage)
         {
-            TargetIsPlayer = targetIsPlayer;
+            IsTargetPlayer = isTargetPlayer;
             Damage = damage;
         }
 
-        public bool TargetIsPlayer { get; }
+        public bool IsTargetPlayer { get; }
 
         public float Damage { get; }
     }

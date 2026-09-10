@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using VContainer;
 
@@ -15,3 +16,4 @@ namespace PistolPanic.Presentation
         }
     }
 }
+#endif

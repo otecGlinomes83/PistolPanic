@@ -1,19 +1,18 @@
-using Random = UnityEngine.Random;
 using UnityEngine;
 
 namespace PistolPanic.Core
 {
     public sealed class AiShooterSystem
     {
-        private const float InitialInvisibleSeconds = 999f;
+        private const float InitialSinceLastShotSeconds = 999f;
 
         private readonly CollisionMath _collisionMath;
 
         private float _randomCooldownSeconds;
 
-        private float _invisibleSeconds = InitialInvisibleSeconds;
+        private float _invisibleSeconds;
 
-        private float _sinceLastShotSeconds = InitialInvisibleSeconds;
+        private float _sinceLastShotSeconds = InitialSinceLastShotSeconds;
 
         private bool _wasPlayerVisible;
 
@@ -53,9 +52,6 @@ namespace PistolPanic.Core
         private void OnStageChanged(EnemyConfig enemyConfig, int enemyStageIndex)
         {
             _lastStageIndex = enemyStageIndex;
-            _wasPlayerVisible = false;
-            _invisibleSeconds = InitialInvisibleSeconds;
-            _sinceLastShotSeconds = InitialInvisibleSeconds;
             ResetRandomCooldown(enemyConfig);
         }
 

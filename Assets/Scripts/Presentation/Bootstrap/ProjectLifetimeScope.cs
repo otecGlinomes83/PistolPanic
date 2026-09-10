@@ -7,9 +7,21 @@ namespace PistolPanic.Presentation
 {
     public class ProjectLifetimeScope : LifetimeScope
     {
+        [SerializeField]
+        private SimulationConfig _simulationConfig = null;
+
+        protected override void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+
+            base.Awake();
+        }
+
         protected sealed override void Configure(IContainerBuilder builder)
         {
             Debug.Log("Scope: Configure " + GetType().Name);
+
+            RegisterSimulationConfig(builder);
 
             builder.RegisterComponentInHierarchy<Bootstrapper>();
 
@@ -20,6 +32,20 @@ namespace PistolPanic.Presentation
 
         protected virtual void ConfigurePlatformServices(IContainerBuilder builder)
         {
+        }
+
+        private void RegisterSimulationConfig(IContainerBuilder builder)
+        {
+            if (_simulationConfig != null)
+            {
+                builder.RegisterInstance(_simulationConfig);
+
+                return;
+            }
+
+            Debug.LogError("ProjectLifetimeScope: SimulationConfig is not assigned. Create asset (Create → PistolPanic → SimulationConfig) in Assets/Configs and assign it on the project scope in Bootstrap scene.");
+
+            builder.RegisterInstance(ScriptableObject.CreateInstance<SimulationConfig>());
         }
     }
 }

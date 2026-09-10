@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using PistolPanic.Core;
 using UnityEngine;
@@ -7,6 +8,8 @@ namespace PistolPanic.Presentation
 {
     public sealed class YgLifecycleAdapter : IPlatformLifecycle
     {
+        private const int SdkWaitTimeoutSeconds = 10;
+
         public UniTask WaitForDataLoadedAsync()
         {
             if (YG2.isSDKEnabled)
@@ -18,7 +21,7 @@ namespace PistolPanic.Presentation
 
             Debug.Log("YgLifecycle: polling for SDK data");
 
-            return UniTask.WaitUntil(IsSdkEnabled);
+            return UniTask.WaitUntil(IsSdkEnabled).Timeout(TimeSpan.FromSeconds(SdkWaitTimeoutSeconds));
         }
 
         public void MarkReady()

@@ -2,14 +2,14 @@ namespace PistolPanic.Core
 {
     public readonly struct GunHitRecord
     {
-        public GunHitRecord(bool targetIsPlayer, float damage, float healthAfter)
+        public GunHitRecord(bool isTargetPlayer, float damage, float healthAfter)
         {
-            TargetIsPlayer = targetIsPlayer;
+            IsTargetPlayer = isTargetPlayer;
             Damage = damage;
             HealthAfter = healthAfter;
         }
 
-        public bool TargetIsPlayer { get; }
+        public bool IsTargetPlayer { get; }
 
         public float Damage { get; }
 

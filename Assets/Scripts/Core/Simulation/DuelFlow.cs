@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace PistolPanic.Core
 {
@@ -7,9 +6,13 @@ namespace PistolPanic.Core
     {
         private float _graceRemainingSeconds;
 
+        private float _fightElapsedSeconds;
+
         public event Action<DuelPhase> PhaseChanged;
 
         public DuelPhase Phase { get; private set; } = DuelPhase.Armed;
+
+        public float FightElapsedSeconds => _fightElapsedSeconds;
 
         public bool IsSimulationRunning
         {
@@ -47,17 +50,25 @@ namespace PistolPanic.Core
             Phase = DuelPhase.Grace;
             _graceRemainingSeconds = graceSeconds;
             PhaseChanged?.Invoke(DuelPhase.Grace);
-
-            Debug.Log("DuelFlow: Armed -> Grace");
         }
 
         public void Tick(float fixedDelta)
         {
-            if (Phase != DuelPhase.Grace)
+            if (Phase == DuelPhase.Grace)
             {
+                TickGraceCountdown(fixedDelta);
+
                 return;
             }
 
+            if (Phase == DuelPhase.Fight)
+            {
+                _fightElapsedSeconds += fixedDelta;
+            }
+        }
+
+        private void TickGraceCountdown(float fixedDelta)
+        {
             _graceRemainingSeconds -= fixedDelta;
 
             if (_graceRemainingSeconds > 0f)
@@ -67,8 +78,6 @@ namespace PistolPanic.Core
 
             Phase = DuelPhase.Fight;
             PhaseChanged?.Invoke(DuelPhase.Fight);
-
-            Debug.Log("DuelFlow: Grace -> Fight");
         }
 
         public void CompleteVictory()
@@ -80,8 +89,6 @@ namespace PistolPanic.Core
 
             Phase = DuelPhase.Victory;
             PhaseChanged?.Invoke(DuelPhase.Victory);
-
-            Debug.Log("DuelFlow: Fight -> Victory");
         }
 
         public void CompleteDefeat()
@@ -93,8 +100,6 @@ namespace PistolPanic.Core
 
             Phase = DuelPhase.Defeat;
             PhaseChanged?.Invoke(DuelPhase.Defeat);
-
-            Debug.Log("DuelFlow: Fight -> Defeat");
         }
     }
 }

@@ -24,3 +24,4 @@ MonoBehaviour:
   _fireCooldownMaxSeconds: 2.6
   _reactionSeconds: 0.2
   _visionConeDegrees: 100
+  _visibilityDebounceSeconds: 0.3

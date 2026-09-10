@@ -1,4 +1,5 @@
 using PistolPanic.Core;
+using PistolPanic.Meta;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -27,6 +28,13 @@ namespace PistolPanic.Presentation
 
         protected override void Configure(IContainerBuilder builder)
         {
+            if (Parent == null)
+            {
+                Debug.LogError("GameLifetimeScope: parent project scope is missing. Scenes must be loaded through SceneLoader from Bootstrap.");
+
+                return;
+            }
+
             Debug.Log("Scope: Configure GameLifetimeScope, mapConfig=" + (_mapConfig != null) + " weaponConfig=" + (_weaponConfig != null) + " explosionConfig=" + (_explosionConfig != null) + " physicsConfig=" + (_physicsConfig != null) + " playerConfig=" + (_playerConfig != null) + " enemyConfig=" + (_enemyConfig != null));
 
             bool hasAllConfigs = _mapConfig != null && _weaponConfig != null && _explosionConfig != null && _physicsConfig != null && _playerConfig != null && _enemyConfig != null;
@@ -44,6 +52,7 @@ namespace PistolPanic.Presentation
             builder.RegisterInstance(_physicsConfig);
             builder.RegisterInstance(_playerConfig);
             builder.RegisterInstance(_enemyConfig);
+            builder.RegisterInstance(new WeaponParams(_weaponConfig));
 
             builder.Register<CollisionMath>(Lifetime.Scoped);
             builder.Register<DuelFlow>(Lifetime.Scoped);
@@ -55,7 +64,7 @@ namespace PistolPanic.Presentation
             builder.Register<DamageSystem>(Lifetime.Scoped);
             builder.Register<AiShooterSystem>(Lifetime.Scoped);
             builder.Register<DuelSim>(Lifetime.Scoped);
-            builder.Register<SpriteFactory>(Lifetime.Scoped);
+            builder.Register<MatchResultApplier>(Lifetime.Scoped);
 
             builder.RegisterComponentOnNewGameObject<SimulationDriver>(Lifetime.Scoped, "SimulationDriver");
             builder.RegisterComponentOnNewGameObject<InputReader>(Lifetime.Scoped, "InputReader").As<IPlayerInput>();
@@ -63,7 +72,10 @@ namespace PistolPanic.Presentation
             builder.RegisterComponentOnNewGameObject<BulletPool>(Lifetime.Scoped, "BulletPool").As<IBulletPool>();
             builder.RegisterComponentOnNewGameObject<ViewBinder>(Lifetime.Scoped, "ViewBinder");
             builder.RegisterComponentOnNewGameObject<DuelResultOverlayView>(Lifetime.Scoped, "DuelResultOverlay");
+            builder.RegisterComponentOnNewGameObject<GameplayLifecyclePresenter>(Lifetime.Scoped, "GameplayLifecyclePresenter");
+#if UNITY_EDITOR
             builder.RegisterComponentOnNewGameObject<SimulationDebugOverlay>(Lifetime.Scoped, "SimulationDebugOverlay");
+#endif
 
             builder.RegisterBuildCallback(ActivateAmbientComponents);
         }
@@ -77,7 +89,10 @@ namespace PistolPanic.Presentation
             resolver.Resolve<ArenaView>();
             resolver.Resolve<ViewBinder>();
             resolver.Resolve<DuelResultOverlayView>();
+            resolver.Resolve<GameplayLifecyclePresenter>();
+#if UNITY_EDITOR
             resolver.Resolve<SimulationDebugOverlay>();
+#endif
         }
     }
 }

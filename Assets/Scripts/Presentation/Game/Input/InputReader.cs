@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 
 namespace PistolPanic.Presentation
 {
+    [DefaultExecutionOrder(-100)]
     public sealed class InputReader : MonoBehaviour, IPlayerInput
     {
         private bool _isPressed;

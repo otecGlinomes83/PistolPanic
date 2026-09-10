@@ -17,6 +17,8 @@ namespace PistolPanic.Presentation
 
         private CanvasGroup _fadeCanvasGroup;
 
+        private bool _isLoading;
+
         public SceneLoader(LifetimeScope lifetimeScope)
         {
             _lifetimeScope = lifetimeScope;
@@ -24,20 +26,38 @@ namespace PistolPanic.Presentation
 
         public async UniTask Load(string sceneName)
         {
-            Debug.Log("SceneLoader: fade in, loading '" + sceneName + "'");
-
-            CanvasGroup fadeCanvasGroup = GetOrCreateFadeCanvas();
-
-            await FadeAsync(fadeCanvasGroup, 0f, 1f);
-
-            using (LifetimeScope.EnqueueParent(_lifetimeScope))
+            if (_isLoading)
             {
-                await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+                return;
             }
 
-            await FadeAsync(fadeCanvasGroup, 1f, 0f);
+            _isLoading = true;
 
-            Debug.Log("SceneLoader: scene '" + sceneName + "' ready, fade out done");
+            try
+            {
+                Debug.Log("SceneLoader: fade in, loading '" + sceneName + "'");
+
+                CanvasGroup fadeCanvasGroup = GetOrCreateFadeCanvas();
+
+                fadeCanvasGroup.blocksRaycasts = true;
+
+                await FadeAsync(fadeCanvasGroup, 0f, 1f);
+
+                using (LifetimeScope.EnqueueParent(_lifetimeScope))
+                {
+                    await SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+                }
+
+                await FadeAsync(fadeCanvasGroup, 1f, 0f);
+
+                fadeCanvasGroup.blocksRaycasts = false;
+
+                Debug.Log("SceneLoader: scene '" + sceneName + "' ready, fade out done");
+            }
+            finally
+            {
+                _isLoading = false;
+            }
         }
 
         private async UniTask FadeAsync(CanvasGroup canvasGroup, float fromAlpha, float toAlpha)
@@ -46,7 +66,7 @@ namespace PistolPanic.Presentation
 
             while (elapsedTime < FadeDurationSeconds)
             {
-                elapsedTime += Time.deltaTime;
+                elapsedTime += Time.unscaledDeltaTime;
                 canvasGroup.alpha = Mathf.Lerp(fromAlpha, toAlpha, elapsedTime / FadeDurationSeconds);
 
                 await UniTask.Yield(PlayerLoopTiming.Update);

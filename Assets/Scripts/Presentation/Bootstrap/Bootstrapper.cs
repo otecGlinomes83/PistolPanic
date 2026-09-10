@@ -3,13 +3,13 @@ using Cysharp.Threading.Tasks;
 using PistolPanic.Core;
 using UnityEngine;
 using VContainer;
-using VContainer.Unity;
 
 namespace PistolPanic.Presentation
 {
     public sealed class Bootstrapper : MonoBehaviour
     {
-        private const int TargetFrameRate = 60;
+        [Inject]
+        private readonly SimulationConfig _simulationConfig = null;
 
         [Inject]
         private readonly ISceneLoader _sceneLoader = null;
@@ -17,16 +17,11 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly IPlatformLifecycle _platformLifecycle = null;
 
-        [Inject]
-        private readonly LifetimeScope _projectLifetimeScope = null;
-
         private void Start()
         {
-            Debug.Log("Bootstrapper: Start, sceneLoader=" + (_sceneLoader != null) + " platform=" + (_platformLifecycle != null) + " scope=" + (_projectLifetimeScope != null));
+            Debug.Log("Bootstrapper: Start, sceneLoader=" + (_sceneLoader != null) + " platform=" + (_platformLifecycle != null));
 
-            Application.targetFrameRate = TargetFrameRate;
-
-            DontDestroyOnLoad(_projectLifetimeScope.gameObject);
+            Application.targetFrameRate = _simulationConfig.TargetFrameRate;
 
             RunBootFlowAsync().Forget();
         }
@@ -44,6 +39,12 @@ namespace PistolPanic.Presentation
                 _platformLifecycle.MarkReady();
 
                 await _sceneLoader.Load(SceneNames.Game);
+            }
+            catch (TimeoutException exception)
+            {
+                Debug.LogError("Bootstrap: YG SDK was not enabled within the timeout " + exception.Message);
+
+                return;
             }
             catch (OperationCanceledException)
             {

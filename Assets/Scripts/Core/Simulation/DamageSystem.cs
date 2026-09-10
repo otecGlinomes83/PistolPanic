@@ -38,7 +38,7 @@ namespace PistolPanic.Core
         {
             for (int i = 0; i < requests.Count; i++)
             {
-                if (requests[i].TargetIsPlayer)
+                if (requests[i].IsTargetPlayer)
                 {
                     ApplyToPlayer(requests[i], playerGun, currentFightSeconds, appliedHits);
                 }

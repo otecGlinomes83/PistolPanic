@@ -35,6 +35,9 @@ namespace PistolPanic.Core
         [SerializeField]
         private float _recoilTorqueMaxDegrees = 90f;
 
+        [SerializeField]
+        private float _bulletSpawnOffsetUnits = 0.05f;
+
         public float Damage => _damage;
 
         public float CooldownSeconds => _cooldownSeconds;
@@ -54,5 +57,7 @@ namespace PistolPanic.Core
         public float RecoilTorqueMinDegrees => _recoilTorqueMinDegrees;
 
         public float RecoilTorqueMaxDegrees => _recoilTorqueMaxDegrees;
+
+        public float BulletSpawnOffsetUnits => _bulletSpawnOffsetUnits;
     }
 }

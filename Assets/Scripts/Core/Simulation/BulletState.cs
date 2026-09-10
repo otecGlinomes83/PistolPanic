@@ -16,11 +16,9 @@ namespace PistolPanic.Core
 
         public float Damage { get; set; }
 
-        public bool OwnerIsPlayer { get; set; }
+        public bool IsPlayerOwned { get; set; }
 
         public bool IsAlive { get; set; }
-
-        public bool WasAlive { get; set; }
 
         public BulletDeathReason DeathReason { get; set; }
     }

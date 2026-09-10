@@ -7,20 +7,23 @@ namespace PistolPanic.Core
     {
         private readonly CollisionMath _collisionMath;
 
+        private readonly ExplosionConfig _explosionConfig;
+
         private readonly List<ExplosionRecord> _explosionsThisTick = new List<ExplosionRecord>(4);
 
         private readonly List<DamageRequest> _damageRequests = new List<DamageRequest>(4);
 
-        public ExplosionSystem(CollisionMath collisionMath)
+        public ExplosionSystem(CollisionMath collisionMath, ExplosionConfig explosionConfig)
         {
             _collisionMath = collisionMath;
+            _explosionConfig = explosionConfig;
         }
 
         public IReadOnlyList<ExplosionRecord> ExplosionsThisTick => _explosionsThisTick;
 
         public IReadOnlyList<DamageRequest> DamageRequests => _damageRequests;
 
-        public void Tick(List<BulletState> bullets, GunState playerGun, GunState enemyGun, ExplosionConfig explosionConfig)
+        public void Tick(IReadOnlyList<BulletState> bullets, GunState playerGun, GunState enemyGun)
         {
             _explosionsThisTick.Clear();
             _damageRequests.Clear();
@@ -36,6 +39,11 @@ namespace PistolPanic.Core
 
                 for (int secondIndex = firstIndex + 1; secondIndex < bullets.Count; secondIndex++)
                 {
+                    if (firstBullet.IsAlive == false)
+                    {
+                        break;
+                    }
+
                     BulletState secondBullet = bullets[secondIndex];
 
                     if (secondBullet.IsAlive == false)
@@ -43,12 +51,12 @@ namespace PistolPanic.Core
                         continue;
                     }
 
-                    TryExplodePair(firstBullet, secondBullet, playerGun, enemyGun, explosionConfig);
+                    TryExplodePair(firstBullet, secondBullet, playerGun, enemyGun);
                 }
             }
         }
 
-        private void TryExplodePair(BulletState firstBullet, BulletState secondBullet, GunState playerGun, GunState enemyGun, ExplosionConfig explosionConfig)
+        private void TryExplodePair(BulletState firstBullet, BulletState secondBullet, GunState playerGun, GunState enemyGun)
         {
             float combinedRadius = firstBullet.Radius + secondBullet.Radius;
 
@@ -71,22 +79,24 @@ namespace PistolPanic.Core
             secondBullet.IsAlive = false;
             secondBullet.DeathReason = BulletDeathReason.Explosion;
 
-            _explosionsThisTick.Add(new ExplosionRecord(explosionPosition, explosionConfig.RadiusUnits));
+            _explosionsThisTick.Add(new ExplosionRecord(explosionPosition, _explosionConfig.RadiusUnits));
 
-            AddExplosionDamageRequest(playerGun, explosionPosition, explosionConfig, false);
-            AddExplosionDamageRequest(enemyGun, explosionPosition, explosionConfig, true);
+            AddExplosionDamageRequest(playerGun, explosionPosition, true);
+            AddExplosionDamageRequest(enemyGun, explosionPosition, false);
         }
 
-        private void AddExplosionDamageRequest(GunState targetGun, Vector2 explosionPosition, ExplosionConfig explosionConfig, bool targetIsPlayer)
+        private void AddExplosionDamageRequest(GunState targetGun, Vector2 explosionPosition, bool targetIsPlayer)
         {
+            float blastRadius = _explosionConfig.RadiusUnits + targetGun.Radius;
+
             Vector2 offset = targetGun.Position - explosionPosition;
 
-            if (offset.sqrMagnitude > explosionConfig.RadiusUnits * explosionConfig.RadiusUnits)
+            if (offset.sqrMagnitude > blastRadius * blastRadius)
             {
                 return;
             }
 
-            _damageRequests.Add(new DamageRequest(targetIsPlayer, explosionConfig.Damage));
+            _damageRequests.Add(new DamageRequest(targetIsPlayer, _explosionConfig.Damage));
         }
     }
 }

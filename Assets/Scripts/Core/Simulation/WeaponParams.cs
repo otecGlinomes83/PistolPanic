@@ -14,6 +14,7 @@ namespace PistolPanic.Core
             RecoilImpulse = weaponConfig.RecoilImpulse;
             RecoilTorqueMinDegrees = weaponConfig.RecoilTorqueMinDegrees;
             RecoilTorqueMaxDegrees = weaponConfig.RecoilTorqueMaxDegrees;
+            BulletSpawnOffsetUnits = weaponConfig.BulletSpawnOffsetUnits;
         }
 
         public float Damage { get; }
@@ -35,5 +36,7 @@ namespace PistolPanic.Core
         public float RecoilTorqueMinDegrees { get; }
 
         public float RecoilTorqueMaxDegrees { get; }
+
+        public float BulletSpawnOffsetUnits { get; }
     }
 }

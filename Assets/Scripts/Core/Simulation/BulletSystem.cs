@@ -5,24 +5,72 @@ namespace PistolPanic.Core
 {
     public sealed class BulletSystem
     {
+        private const int BulletListCapacity = 64;
+
         private readonly CollisionMath _collisionMath;
+
+        private readonly WeaponParams _weaponParams;
+
+        private readonly List<BulletState> _bullets = new List<BulletState>(BulletListCapacity);
+
+        private readonly List<bool> _wasAliveThisTick = new List<bool>(BulletListCapacity);
+
+        private readonly List<BulletSpawnedSnapshot> _spawnedThisTick = new List<BulletSpawnedSnapshot>(BulletListCapacity);
+
+        private readonly List<BulletMovedSnapshot> _movedThisTick = new List<BulletMovedSnapshot>(BulletListCapacity);
+
+        private readonly List<int> _removedThisTick = new List<int>(BulletListCapacity);
 
         private readonly List<DamageRequest> _damageRequests = new List<DamageRequest>(16);
 
-        public BulletSystem(CollisionMath collisionMath)
+        private int _nextBulletId = 1;
+
+        public BulletSystem(CollisionMath collisionMath, WeaponParams weaponParams)
         {
             _collisionMath = collisionMath;
+            _weaponParams = weaponParams;
+
+            for (int i = 0; i < BulletListCapacity; i++)
+            {
+                _bullets.Add(new BulletState());
+                _wasAliveThisTick.Add(false);
+            }
         }
+
+        public IReadOnlyList<BulletState> Bullets => _bullets;
+
+        public IReadOnlyList<BulletSpawnedSnapshot> SpawnedThisTick => _spawnedThisTick;
+
+        public IReadOnlyList<BulletMovedSnapshot> MovedThisTick => _movedThisTick;
+
+        public IReadOnlyList<int> RemovedThisTick => _removedThisTick;
 
         public IReadOnlyList<DamageRequest> DamageRequests => _damageRequests;
 
-        public void Tick(float fixedDelta, ArenaState arena, GunState playerGun, GunState enemyGun, List<BulletState> bullets)
+        public void Spawn(GunState ownerGun, Vector2 fireDirection, bool ownerIsPlayer)
+        {
+            BulletState bullet = FindFreeBullet();
+            float spawnOffset = ownerGun.Radius + _weaponParams.BulletRadius + _weaponParams.BulletSpawnOffsetUnits;
+
+            bullet.Id = _nextBulletId;
+            _nextBulletId += 1;
+            bullet.Position = ownerGun.Position + fireDirection * spawnOffset;
+            bullet.PreviousPosition = bullet.Position;
+            bullet.Velocity = fireDirection * _weaponParams.BulletSpeed;
+            bullet.Radius = _weaponParams.BulletRadius;
+            bullet.Damage = _weaponParams.Damage;
+            bullet.IsPlayerOwned = ownerIsPlayer;
+            bullet.IsAlive = true;
+            bullet.DeathReason = BulletDeathReason.None;
+        }
+
+        public void Tick(float fixedDelta, ArenaState arena, GunState playerGun, GunState enemyGun)
         {
             _damageRequests.Clear();
 
-            for (int i = 0; i < bullets.Count; i++)
+            for (int i = 0; i < _bullets.Count; i++)
             {
-                BulletState bullet = bullets[i];
+                BulletState bullet = _bullets[i];
 
                 if (bullet.IsAlive == false)
                 {
@@ -31,6 +79,58 @@ namespace PistolPanic.Core
 
                 MoveAndCollide(fixedDelta, arena, playerGun, enemyGun, bullet);
             }
+        }
+
+        public void CaptureTickDiffs()
+        {
+            _spawnedThisTick.Clear();
+            _movedThisTick.Clear();
+            _removedThisTick.Clear();
+
+            for (int i = 0; i < _bullets.Count; i++)
+            {
+                BulletState bullet = _bullets[i];
+                bool wasAlive = _wasAliveThisTick[i];
+
+                if (bullet.IsAlive && wasAlive == false)
+                {
+                    _spawnedThisTick.Add(new BulletSpawnedSnapshot(bullet.Id, bullet.Position, bullet.Radius * 2f));
+                }
+                else if (bullet.IsAlive && wasAlive)
+                {
+                    _movedThisTick.Add(new BulletMovedSnapshot(bullet.Id, bullet.Position));
+                }
+                else if (bullet.IsAlive == false && wasAlive)
+                {
+                    _removedThisTick.Add(bullet.Id);
+                }
+
+                _wasAliveThisTick[i] = bullet.IsAlive;
+            }
+        }
+
+        public void ClearTickDiffs()
+        {
+            _spawnedThisTick.Clear();
+            _movedThisTick.Clear();
+            _removedThisTick.Clear();
+        }
+
+        private BulletState FindFreeBullet()
+        {
+            for (int i = 0; i < _bullets.Count; i++)
+            {
+                if (_bullets[i].IsAlive == false)
+                {
+                    return _bullets[i];
+                }
+            }
+
+            BulletState newBullet = new BulletState();
+            _bullets.Add(newBullet);
+            _wasAliveThisTick.Add(false);
+
+            return newBullet;
         }
 
         private void MoveAndCollide(float fixedDelta, ArenaState arena, GunState playerGun, GunState enemyGun, BulletState bullet)
@@ -107,7 +207,7 @@ namespace PistolPanic.Core
                 return;
             }
 
-            if (bullet.OwnerIsPlayer == targetIsPlayer)
+            if (bullet.IsPlayerOwned == targetIsPlayer)
             {
                 return;
             }

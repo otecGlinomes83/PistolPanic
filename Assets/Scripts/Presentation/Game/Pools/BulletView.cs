@@ -5,11 +5,13 @@ namespace PistolPanic.Presentation
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class BulletView : MonoBehaviour
     {
+        private SpriteRenderer _spriteRenderer;
+
         public void Initialize(Sprite bulletSprite, Color bulletColor)
         {
-            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-            spriteRenderer.sprite = bulletSprite;
-            spriteRenderer.color = bulletColor;
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _spriteRenderer.sprite = bulletSprite;
+            _spriteRenderer.color = bulletColor;
         }
 
         public void Show(Vector2 position, float diameter)

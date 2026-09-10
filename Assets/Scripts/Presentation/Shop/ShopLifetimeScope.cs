@@ -8,6 +8,13 @@ namespace PistolPanic.Presentation
     {
         protected override void Configure(IContainerBuilder builder)
         {
+            if (Parent == null)
+            {
+                Debug.LogError("ShopLifetimeScope: parent project scope is missing. Scenes must be loaded through SceneLoader from Bootstrap.");
+
+                return;
+            }
+
             Debug.Log("Scope: Configure ShopLifetimeScope");
 
             builder.RegisterComponentInHierarchy<SceneSwapDebugView>();

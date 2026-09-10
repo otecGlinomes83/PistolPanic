@@ -18,12 +18,17 @@ namespace PistolPanic.Presentation
         [SerializeField]
         private string _targetSceneName = null;
 
-        private void OnEnable()
+        private void Start()
         {
+            if (_swapButton == null)
+            {
+                return;
+            }
+
             _swapButton.onClick.AddListener(OnSwapButtonClicked);
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
             if (_swapButton == null)
             {

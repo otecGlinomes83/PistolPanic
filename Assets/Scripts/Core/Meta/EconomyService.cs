@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace PistolPanic.Meta
 {
     public sealed class EconomyService

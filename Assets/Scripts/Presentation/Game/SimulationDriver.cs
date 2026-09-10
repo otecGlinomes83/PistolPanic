@@ -6,12 +6,15 @@ namespace PistolPanic.Presentation
 {
     public sealed class SimulationDriver : MonoBehaviour
     {
-        private const float FixedDeltaSeconds = 1f / 60f;
-
-        private const int MaxStepsPerFrame = 3;
+        [Inject]
+        private readonly SimulationConfig _simulationConfig = null;
 
         [Inject]
         private readonly DuelSim _duelSim = null;
+
+        private float _fixedDeltaSeconds;
+
+        private float _maxAccumulatorSeconds;
 
         private float _accumulatorSeconds;
 
@@ -38,7 +41,10 @@ namespace PistolPanic.Presentation
 
         private void Start()
         {
-            Debug.Log("SimulationDriver: start, fixedStep=" + FixedDeltaSeconds.ToString("0.####") + " maxSteps=" + MaxStepsPerFrame);
+            _fixedDeltaSeconds = 1f / _simulationConfig.TicksPerSecond;
+            _maxAccumulatorSeconds = _fixedDeltaSeconds * _simulationConfig.MaxStepsPerFrame;
+
+            Debug.Log("SimulationDriver: start, fixedStep=" + _fixedDeltaSeconds.ToString("0.####") + " maxSteps=" + _simulationConfig.MaxStepsPerFrame);
         }
 
         private void Update()
@@ -53,17 +59,17 @@ namespace PistolPanic.Presentation
 
             int stepsThisFrame = 0;
 
-            while (_accumulatorSeconds >= FixedDeltaSeconds && stepsThisFrame < MaxStepsPerFrame)
+            while (_accumulatorSeconds >= _fixedDeltaSeconds && stepsThisFrame < _simulationConfig.MaxStepsPerFrame)
             {
-                _duelSim.Tick(FixedDeltaSeconds);
-                _accumulatorSeconds -= FixedDeltaSeconds;
+                _duelSim.Tick(_fixedDeltaSeconds);
+                _accumulatorSeconds -= _fixedDeltaSeconds;
                 stepsThisFrame += 1;
                 _tickCounter += 1;
             }
 
-            if (_accumulatorSeconds >= FixedDeltaSeconds)
+            if (_accumulatorSeconds > _maxAccumulatorSeconds)
             {
-                _accumulatorSeconds = 0f;
+                _accumulatorSeconds = _maxAccumulatorSeconds;
             }
         }
 

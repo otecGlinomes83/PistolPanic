@@ -19,6 +19,9 @@ namespace PistolPanic.Core
         private float _playerSpawnRotationDegrees = 90f;
 
         [SerializeField]
+        private float _enemySpawnRotationDegrees = 270f;
+
+        [SerializeField]
         private float _spawnImpulseMin = 1.5f;
 
         [SerializeField]
@@ -46,6 +49,8 @@ namespace PistolPanic.Core
         public Vector2 EnemySpawnPoint => _enemySpawnPoint;
 
         public float PlayerSpawnRotationDegrees => _playerSpawnRotationDegrees;
+
+        public float EnemySpawnRotationDegrees => _enemySpawnRotationDegrees;
 
         public float SpawnImpulseMin => _spawnImpulseMin;
 

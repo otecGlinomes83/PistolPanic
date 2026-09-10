@@ -22,3 +22,5 @@ MonoBehaviour:
   _spawnAngularVelocityMax: 120
   _gunCollisionRadius: 0.4
   _obstacles: []
+  _gracePeriodSeconds: 1
+  _enemySpawnRotationDegrees: 270
