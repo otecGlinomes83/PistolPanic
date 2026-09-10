@@ -72,8 +72,8 @@ namespace PistolPanic.Presentation
 
         private void CreateGunViews()
         {
-            Sprite playerGunSprite = _spriteFactory.GetGunSprite(_playerWeaponProvider.CurrentWeaponConfig.FirePattern);
-            Sprite enemyGunSprite = _spriteFactory.GetGunSprite(_enemyTypeProvider.Current.WeaponConfig.FirePattern);
+            Sprite playerGunSprite = _spriteFactory.GetGunSprite(_playerWeaponProvider.CurrentWeaponConfig.FirePattern, GunSkin.PlayerSteel);
+            Sprite enemyGunSprite = _spriteFactory.GetGunSprite(_enemyTypeProvider.Current.WeaponConfig.FirePattern, _enemyTypeProvider.Current.GunSkin);
             Color playerGunColor = new Color(0.3f, 0.85f, 0.4f, 1f);
 
             _playerGunView = CreateGunView("PlayerGunView", playerGunSprite, playerGunColor);
@@ -120,7 +120,7 @@ namespace PistolPanic.Presentation
                 flashPosition = _enemyGunView.transform.position;
             }
 
-            _fxPool.PlayFlash(flashPosition, new Color(1f, 0.4f, 0.3f), 0.9f, 0.2f, 0.15f);
+            _fxPool.PlayFlash(flashPosition, new Color(1f, 0.4f, 0.3f), 0.9f, 0.2f, 0.15f, FlashShape.Glow);
         }
 
         private void OnExplosionHappened(ExplosionRecord record)
@@ -129,7 +129,7 @@ namespace PistolPanic.Presentation
 
             Vector3 flashPosition = new Vector3(record.Position.x, record.Position.y, 0f);
 
-            _fxPool.PlayFlash(flashPosition, new Color(1f, 0.75f, 0.25f), 0.3f, record.Radius * 2f, 0.3f);
+            _fxPool.PlayFlash(flashPosition, new Color(1f, 0.75f, 0.25f), 0.3f, record.Radius * 2f, 0.3f, FlashShape.Ring);
         }
 
         private void OnShotFired(ShotFiredSnapshot snapshot)
@@ -147,7 +147,7 @@ namespace PistolPanic.Presentation
                 flashPosition = _enemyGunView.transform.position;
             }
 
-            _fxPool.PlayFlash(flashPosition, new Color(1f, 0.9f, 0.5f), 0.5f, 0.1f, 0.08f);
+            _fxPool.PlayFlash(flashPosition, new Color(1f, 0.9f, 0.5f), 0.5f, 0.1f, 0.08f, FlashShape.Star);
         }
 
         private SfxType MapPatternToSfx(FirePattern pattern)

@@ -52,6 +52,9 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly AudioService _audioService = null;
 
+        [Inject]
+        private readonly SpriteFactory _spriteFactory = null;
+
         private TMP_Text _levelText;
 
         private TMP_Text _moneyText;
@@ -65,6 +68,8 @@ namespace PistolPanic.Presentation
         private readonly Image[] _ammoPips = new Image[MaxAmmoPips];
 
         private Image[] _stagePips;
+
+        private Image _phasePanel;
 
         private bool _wasFullReloading;
 
@@ -98,6 +103,8 @@ namespace PistolPanic.Presentation
 
             canvasObject.AddComponent<GraphicRaycaster>();
 
+            CreatePanel(canvasObject.transform, "StatsPanel", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -16f), new Vector2(620f, 200f), new Color(1f, 1f, 1f, 0.85f));
+
             _levelText = CreateText(canvasObject.transform, "LevelText", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f));
             _levelText.rectTransform.anchoredPosition = new Vector2(40f, -40f);
             _levelText.rectTransform.sizeDelta = new Vector2(560f, 70f);
@@ -115,6 +122,9 @@ namespace PistolPanic.Presentation
 
             CreateStagePips(canvasObject.transform);
             CreateWeaponPanel(canvasObject.transform);
+
+            _phasePanel = CreatePanel(canvasObject.transform, "PhasePanel", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000f, 210f), new Color(1f, 1f, 1f, 0.85f));
+            _phasePanel.gameObject.SetActive(false);
 
             _phaseMessageText = CreateText(canvasObject.transform, "PhaseMessageText", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
             _phaseMessageText.rectTransform.anchoredPosition = Vector2.zero;
@@ -146,6 +156,8 @@ namespace PistolPanic.Presentation
             _weaponNameText.fontSize = 44f;
             _weaponNameText.alignment = TextAlignmentOptions.Left;
             _weaponNameText.text = _playerWeaponProvider.CurrentWeaponConfig.DisplayName;
+
+            CreatePanel(parentTransform, "AmmoBackingPanel", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 116f), new Vector2(322f, 88f), new Color(1f, 1f, 1f, 0.55f));
 
             for (int i = 0; i < _ammoPips.Length; i++)
             {
@@ -217,11 +229,13 @@ namespace PistolPanic.Presentation
             {
                 _phaseMessageText.gameObject.SetActive(true);
                 _phaseMessageText.text = "ПРИГОТОВЬСЯ";
+                _phasePanel.gameObject.SetActive(true);
 
                 return;
             }
 
             _phaseMessageText.gameObject.SetActive(false);
+            _phasePanel.gameObject.SetActive(false);
         }
 
         private void UpdateAmmoPips(AmmoSnapshot snapshot)
@@ -292,6 +306,27 @@ namespace PistolPanic.Presentation
             rectTransform.pivot = pivot;
 
             Image image = imageObject.AddComponent<Image>();
+            image.raycastTarget = false;
+
+            return image;
+        }
+
+        private Image CreatePanel(Transform parentTransform, string panelName, Vector2 anchor, Vector2 pivot, Vector2 anchoredPosition, Vector2 sizeDelta, Color panelColor)
+        {
+            GameObject panelObject = new GameObject(panelName, typeof(RectTransform));
+            panelObject.transform.SetParent(parentTransform, false);
+
+            RectTransform rectTransform = panelObject.GetComponent<RectTransform>();
+            rectTransform.anchorMin = anchor;
+            rectTransform.anchorMax = anchor;
+            rectTransform.pivot = pivot;
+            rectTransform.anchoredPosition = anchoredPosition;
+            rectTransform.sizeDelta = sizeDelta;
+
+            Image image = panelObject.AddComponent<Image>();
+            image.sprite = _spriteFactory.GetPanelSprite();
+            image.type = Image.Type.Sliced;
+            image.color = panelColor;
             image.raycastTarget = false;
 
             return image;

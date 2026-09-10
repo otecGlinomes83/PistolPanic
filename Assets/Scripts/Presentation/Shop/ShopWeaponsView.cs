@@ -121,6 +121,8 @@ namespace PistolPanic.Presentation
             cardRect.anchoredPosition = new Vector2(0f, -CardTopOffset - cardIndex * CardSpacing);
 
             Image borderImage = cardObject.AddComponent<Image>();
+            borderImage.sprite = _spriteFactory.GetPanelSprite();
+            borderImage.type = Image.Type.Sliced;
             borderImage.color = _borderDimColor;
 
             Button cardButton = cardObject.AddComponent<Button>();
@@ -178,7 +180,7 @@ namespace PistolPanic.Presentation
             previewRect.anchoredPosition = new Vector2(-30f, 0f);
 
             Image previewImage = previewObject.AddComponent<Image>();
-            previewImage.sprite = _spriteFactory.GetGunSprite(weaponConfig.FirePattern);
+            previewImage.sprite = _spriteFactory.GetGunSprite(weaponConfig.FirePattern, GunSkin.PlayerSteel);
             previewImage.preserveAspect = true;
             previewImage.raycastTarget = false;
         }

@@ -60,7 +60,7 @@ namespace PistolPanic.Presentation
             viewObject.SetActive(false);
 
             BulletView view = viewObject.AddComponent<BulletView>();
-            view.Initialize(_spriteFactory.GetCircleSprite());
+            view.Initialize(_spriteFactory.GetBulletSprite());
 
             return view;
         }

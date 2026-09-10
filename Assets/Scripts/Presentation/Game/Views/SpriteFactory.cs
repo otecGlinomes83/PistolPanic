@@ -10,17 +10,29 @@ namespace PistolPanic.Presentation
 
         private const int CircleTextureSize = 64;
 
-        private const int GunTextureWidth = 128;
+        private const int SkinCacheKeyShift = 8;
 
-        private const int GunTextureHeight = 64;
-
-        private const float GunPixelsPerUnit = 64f;
+        private readonly PixelArtFactory _pixelArtFactory = new PixelArtFactory();
 
         private Sprite _squareSprite;
 
         private Sprite _circleSprite;
 
-        private readonly Dictionary<FirePattern, Sprite> _gunSprites = new Dictionary<FirePattern, Sprite>();
+        private Sprite _bulletSprite;
+
+        private Sprite _floorSprite;
+
+        private Sprite _wallSprite;
+
+        private Sprite _obstacleSprite;
+
+        private Sprite _panelSprite;
+
+        private Sprite _accentSprite;
+
+        private readonly Dictionary<long, Sprite> _gunSprites = new Dictionary<long, Sprite>();
+
+        private readonly Dictionary<FlashShape, Sprite> _flashSprites = new Dictionary<FlashShape, Sprite>();
 
         public Sprite GetSquareSprite()
         {
@@ -86,102 +98,96 @@ namespace PistolPanic.Presentation
             return _circleSprite;
         }
 
-        public Sprite GetGunSprite(FirePattern pattern)
+        public Sprite GetGunSprite(FirePattern pattern, GunSkin skin)
         {
+            long cacheKey = ((long)pattern << SkinCacheKeyShift) | (long)skin;
+
             Sprite cachedSprite;
 
-            if (_gunSprites.TryGetValue(pattern, out cachedSprite))
+            if (_gunSprites.TryGetValue(cacheKey, out cachedSprite))
             {
                 return cachedSprite;
             }
 
-            Sprite createdSprite = CreateGunSprite(pattern);
-            _gunSprites.Add(pattern, createdSprite);
+            Sprite createdSprite = _pixelArtFactory.CreateGunSprite(pattern, skin);
+            _gunSprites.Add(cacheKey, createdSprite);
 
             return createdSprite;
         }
 
-        private Sprite CreateGunSprite(FirePattern pattern)
+        public Sprite GetBulletSprite()
         {
-            int patternValue = (int)pattern;
-
-            if (patternValue == (int)FirePattern.Burst)
+            if (_bulletSprite == null)
             {
-                return CreateBurstGunSprite();
+                _bulletSprite = _pixelArtFactory.CreateBulletSprite();
             }
 
-            if (patternValue == (int)FirePattern.Shotgun)
+            return _bulletSprite;
+        }
+
+        public Sprite GetFlashSprite(FlashShape shape)
+        {
+            Sprite cachedSprite;
+
+            if (_flashSprites.TryGetValue(shape, out cachedSprite))
             {
-                return CreateShotgunGunSprite();
+                return cachedSprite;
             }
 
-            return CreateSingleGunSprite();
+            Sprite createdSprite = _pixelArtFactory.CreateFlashSprite(shape);
+            _flashSprites.Add(shape, createdSprite);
+
+            return createdSprite;
         }
 
-        private Sprite CreateSingleGunSprite()
+        public Sprite GetFloorSprite()
         {
-            Color[] pixels = CreateClearGunPixels();
-
-            FillRect(pixels, GunTextureWidth, 16, 24, 80, 48);
-            FillRect(pixels, GunTextureWidth, 80, 32, 112, 44);
-            FillRect(pixels, GunTextureWidth, 24, 8, 44, 24);
-
-            return CreateSpriteFromGunPixels(pixels);
-        }
-
-        private Sprite CreateBurstGunSprite()
-        {
-            Color[] pixels = CreateClearGunPixels();
-
-            FillRect(pixels, GunTextureWidth, 8, 26, 104, 46);
-            FillRect(pixels, GunTextureWidth, 104, 32, 124, 42);
-            FillRect(pixels, GunTextureWidth, 48, 10, 64, 26);
-            FillRect(pixels, GunTextureWidth, 8, 20, 22, 34);
-
-            return CreateSpriteFromGunPixels(pixels);
-        }
-
-        private Sprite CreateShotgunGunSprite()
-        {
-            Color[] pixels = CreateClearGunPixels();
-
-            FillRect(pixels, GunTextureWidth, 8, 28, 120, 44);
-            FillRect(pixels, GunTextureWidth, 56, 20, 80, 28);
-            FillRect(pixels, GunTextureWidth, 8, 36, 24, 52);
-
-            return CreateSpriteFromGunPixels(pixels);
-        }
-
-        private Color[] CreateClearGunPixels()
-        {
-            Color[] pixels = new Color[GunTextureWidth * GunTextureHeight];
-
-            for (int i = 0; i < pixels.Length; i++)
+            if (_floorSprite == null)
             {
-                pixels[i] = Color.clear;
+                _floorSprite = _pixelArtFactory.CreateFloorSprite();
             }
 
-            return pixels;
+            return _floorSprite;
         }
 
-        private void FillRect(Color[] pixels, int textureWidth, int x0, int y0, int x1, int y1)
+        public Sprite GetWallSprite()
         {
-            for (int pixelY = y0; pixelY <= y1; pixelY++)
+            if (_wallSprite == null)
             {
-                for (int pixelX = x0; pixelX <= x1; pixelX++)
-                {
-                    pixels[pixelY * textureWidth + pixelX] = Color.white;
-                }
+                _wallSprite = _pixelArtFactory.CreateWallSprite();
             }
+
+            return _wallSprite;
         }
 
-        private Sprite CreateSpriteFromGunPixels(Color[] pixels)
+        public Sprite GetObstacleSprite()
         {
-            Texture2D texture = new Texture2D(GunTextureWidth, GunTextureHeight, TextureFormat.RGBA32, false);
-            texture.SetPixels(pixels);
-            texture.Apply(true, false);
+            if (_obstacleSprite == null)
+            {
+                _obstacleSprite = _pixelArtFactory.CreateObstacleSprite();
+            }
 
-            return Sprite.Create(texture, new Rect(0f, 0f, GunTextureWidth, GunTextureHeight), new Vector2(0.5f, 0.5f), GunPixelsPerUnit);
+            return _obstacleSprite;
+        }
+
+        public Sprite GetPanelSprite()
+        {
+            if (_panelSprite == null)
+            {
+                _panelSprite = _pixelArtFactory.CreatePanelSprite();
+            }
+
+            return _panelSprite;
+        }
+
+        public Sprite GetAccentSprite()
+        {
+            if (_accentSprite == null)
+            {
+                _accentSprite = _pixelArtFactory.CreateAccentSprite();
+            }
+
+            return _accentSprite;
         }
     }
 }

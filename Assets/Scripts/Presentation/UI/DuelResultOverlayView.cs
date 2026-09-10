@@ -22,6 +22,9 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly AudioService _audioService = null;
 
+        [Inject]
+        private readonly SpriteFactory _spriteFactory = null;
+
         private GameObject _overlayRoot;
 
         private TMP_Text _titleText;
@@ -92,7 +95,9 @@ namespace PistolPanic.Presentation
             panelRect.offsetMax = Vector2.zero;
 
             Image panelImage = panelObject.AddComponent<Image>();
-            panelImage.color = new Color(0.05f, 0.07f, 0.12f, 0.85f);
+            panelImage.sprite = _spriteFactory.GetPanelSprite();
+            panelImage.type = Image.Type.Sliced;
+            panelImage.color = new Color(1f, 1f, 1f, 0.9f);
 
             _titleText = CreateText(panelObject.transform, "TitleText");
             SetAnchors(_titleText.rectTransform, new Vector2(0.5f, 0.68f), new Vector2(0.5f, 0.68f));
@@ -117,7 +122,9 @@ namespace PistolPanic.Presentation
             buttonRect.sizeDelta = new Vector2(420f, 140f);
 
             Image buttonImage = buttonObject.AddComponent<Image>();
-            buttonImage.color = new Color(0.95f, 0.65f, 0.15f, 1f);
+            buttonImage.sprite = _spriteFactory.GetAccentSprite();
+            buttonImage.type = Image.Type.Sliced;
+            buttonImage.color = Color.white;
 
             Button continueButton = buttonObject.AddComponent<Button>();
             continueButton.onClick.AddListener(OnContinueButtonClicked);

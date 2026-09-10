@@ -16,6 +16,9 @@ namespace PistolPanic.Core
         private Color _gunColor = new Color(0.85f, 0.35f, 0.3f, 1f);
 
         [SerializeField]
+        private GunSkin _gunSkin = GunSkin.EnemyRed;
+
+        [SerializeField]
         private List<Color> _stageColors = new List<Color>
         {
             new Color(0.85f, 0.35f, 0.3f, 1f),
@@ -28,6 +31,8 @@ namespace PistolPanic.Core
         public WeaponConfig WeaponConfig => _weaponConfig;
 
         public Color GunColor => _gunColor;
+
+        public GunSkin GunSkin => _gunSkin;
 
         public IReadOnlyList<Color> StageColors => _stageColors;
     }
