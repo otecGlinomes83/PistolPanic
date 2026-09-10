@@ -19,6 +19,9 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly MatchResultApplier _matchResultApplier = null;
 
+        [Inject]
+        private readonly AudioService _audioService = null;
+
         private GameObject _overlayRoot;
 
         private TMP_Text _titleText;
@@ -48,12 +51,14 @@ namespace PistolPanic.Presentation
             {
                 _rewardText.gameObject.SetActive(true);
                 _rewardText.text = "+" + result.Reward;
+                _audioService.PlaySfx(SfxType.Victory);
 
                 ShowOverlay("VICTORY", "SHOP", SceneNames.Shop);
             }
             else if (result.Phase == DuelPhase.Defeat)
             {
                 _rewardText.gameObject.SetActive(false);
+                _audioService.PlaySfx(SfxType.Defeat);
 
                 ShowOverlay("DEFEAT", "SHOP", SceneNames.Shop);
             }
@@ -87,7 +92,7 @@ namespace PistolPanic.Presentation
             panelRect.offsetMax = Vector2.zero;
 
             Image panelImage = panelObject.AddComponent<Image>();
-            panelImage.color = new Color(0f, 0f, 0f, 0.75f);
+            panelImage.color = new Color(0.05f, 0.07f, 0.12f, 0.85f);
 
             _titleText = CreateText(panelObject.transform, "TitleText");
             SetAnchors(_titleText.rectTransform, new Vector2(0.5f, 0.68f), new Vector2(0.5f, 0.68f));
@@ -112,7 +117,7 @@ namespace PistolPanic.Presentation
             buttonRect.sizeDelta = new Vector2(420f, 140f);
 
             Image buttonImage = buttonObject.AddComponent<Image>();
-            buttonImage.color = new Color(0.2f, 0.55f, 0.9f, 1f);
+            buttonImage.color = new Color(0.95f, 0.65f, 0.15f, 1f);
 
             Button continueButton = buttonObject.AddComponent<Button>();
             continueButton.onClick.AddListener(OnContinueButtonClicked);
@@ -123,6 +128,8 @@ namespace PistolPanic.Presentation
             _buttonText.rectTransform.offsetMax = Vector2.zero;
             _buttonText.fontSize = 60f;
             _buttonText.alignment = TextAlignmentOptions.Center;
+            _buttonText.color = Color.black;
+            _buttonText.fontStyle = FontStyles.Bold;
         }
 
         private TMP_Text CreateText(Transform parentTransform, string textObjectName)
@@ -145,6 +152,7 @@ namespace PistolPanic.Presentation
 
         private void OnContinueButtonClicked()
         {
+            _audioService.PlaySfx(SfxType.UiClick);
             _overlayRoot.SetActive(false);
             LoadNextSceneAsync().Forget();
         }

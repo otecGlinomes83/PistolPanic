@@ -4,7 +4,7 @@ namespace PistolPanic.Core
 {
     public interface IBulletPool
     {
-        void Spawn(int bulletId, Vector2 position, float diameter);
+        void Spawn(int bulletId, Vector2 position, float diameter, Color color);
 
         void Move(int bulletId, Vector2 position);
 

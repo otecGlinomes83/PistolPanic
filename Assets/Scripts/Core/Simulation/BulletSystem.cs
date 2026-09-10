@@ -9,8 +9,6 @@ namespace PistolPanic.Core
 
         private readonly CollisionMath _collisionMath;
 
-        private readonly WeaponParams _weaponParams;
-
         private readonly List<BulletState> _bullets = new List<BulletState>(BulletListCapacity);
 
         private readonly List<bool> _wasAliveThisTick = new List<bool>(BulletListCapacity);
@@ -25,10 +23,9 @@ namespace PistolPanic.Core
 
         private int _nextBulletId = 1;
 
-        public BulletSystem(CollisionMath collisionMath, WeaponParams weaponParams)
+        public BulletSystem(CollisionMath collisionMath)
         {
             _collisionMath = collisionMath;
-            _weaponParams = weaponParams;
 
             for (int i = 0; i < BulletListCapacity; i++)
             {
@@ -47,19 +44,18 @@ namespace PistolPanic.Core
 
         public IReadOnlyList<DamageRequest> DamageRequests => _damageRequests;
 
-        public void Spawn(GunState ownerGun, Vector2 fireDirection, bool ownerIsPlayer)
+        public void Spawn(Vector2 position, Vector2 velocity, float radius, float damage, bool isPlayerOwned)
         {
             BulletState bullet = FindFreeBullet();
-            float spawnOffset = ownerGun.Radius + _weaponParams.BulletRadius + _weaponParams.BulletSpawnOffsetUnits;
 
             bullet.Id = _nextBulletId;
             _nextBulletId += 1;
-            bullet.Position = ownerGun.Position + fireDirection * spawnOffset;
-            bullet.PreviousPosition = bullet.Position;
-            bullet.Velocity = fireDirection * _weaponParams.BulletSpeed;
-            bullet.Radius = _weaponParams.BulletRadius;
-            bullet.Damage = _weaponParams.Damage;
-            bullet.IsPlayerOwned = ownerIsPlayer;
+            bullet.Position = position;
+            bullet.PreviousPosition = position;
+            bullet.Velocity = velocity;
+            bullet.Radius = radius;
+            bullet.Damage = damage;
+            bullet.IsPlayerOwned = isPlayerOwned;
             bullet.IsAlive = true;
             bullet.DeathReason = BulletDeathReason.None;
         }
@@ -94,7 +90,7 @@ namespace PistolPanic.Core
 
                 if (bullet.IsAlive && wasAlive == false)
                 {
-                    _spawnedThisTick.Add(new BulletSpawnedSnapshot(bullet.Id, bullet.Position, bullet.Radius * 2f));
+                    _spawnedThisTick.Add(new BulletSpawnedSnapshot(bullet.Id, bullet.Position, bullet.Radius * 2f, bullet.IsPlayerOwned));
                 }
                 else if (bullet.IsAlive && wasAlive)
                 {

@@ -35,10 +35,10 @@ namespace PistolPanic.Presentation
             Vector2 horizontalWallSize = new Vector2(arenaSize.x + WallThicknessUnits * 2f, WallThicknessUnits);
             Vector2 verticalWallSize = new Vector2(WallThicknessUnits, arenaSize.y);
 
-            CreateWall(wallSprite, new Vector2(0f, halfHeight + WallThicknessUnits * 0.5f), horizontalWallSize);
-            CreateWall(wallSprite, new Vector2(0f, -halfHeight - WallThicknessUnits * 0.5f), horizontalWallSize);
-            CreateWall(wallSprite, new Vector2(halfWidth + WallThicknessUnits * 0.5f, 0f), verticalWallSize);
-            CreateWall(wallSprite, new Vector2(-halfWidth - WallThicknessUnits * 0.5f, 0f), verticalWallSize);
+            CreateWall(wallSprite, new Vector2(0f, halfHeight - WallThicknessUnits * 0.5f), horizontalWallSize);
+            CreateWall(wallSprite, new Vector2(0f, -halfHeight + WallThicknessUnits * 0.5f), horizontalWallSize);
+            CreateWall(wallSprite, new Vector2(halfWidth - WallThicknessUnits * 0.5f, 0f), verticalWallSize);
+            CreateWall(wallSprite, new Vector2(-halfWidth + WallThicknessUnits * 0.5f, 0f), verticalWallSize);
         }
 
         private void CreateWall(Sprite wallSprite, Vector2 centerPosition, Vector2 size)

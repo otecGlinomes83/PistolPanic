@@ -10,13 +10,10 @@ namespace PistolPanic.Core
 
         private readonly CollisionMath _collisionMath;
 
-        private readonly WeaponParams _weaponParams;
-
-        public MovementSystem(PhysicsConfig physicsConfig, CollisionMath collisionMath, WeaponParams weaponParams)
+        public MovementSystem(PhysicsConfig physicsConfig, CollisionMath collisionMath)
         {
             _physicsConfig = physicsConfig;
             _collisionMath = collisionMath;
-            _weaponParams = weaponParams;
         }
 
         public void Tick(float fixedDelta, ArenaState arena, GunState gun)
@@ -59,11 +56,11 @@ namespace PistolPanic.Core
             }
         }
 
-        public void ApplyRecoil(GunState gun, Vector2 fireDirection)
+        public void ApplyRecoil(GunState gun, Vector2 fireDirection, WeaponParams weaponParams)
         {
-            gun.Velocity -= fireDirection * _weaponParams.RecoilImpulse;
+            gun.Velocity -= fireDirection * weaponParams.RecoilImpulse;
 
-            float torqueMagnitude = Random.Range(_weaponParams.RecoilTorqueMinDegrees, _weaponParams.RecoilTorqueMaxDegrees);
+            float torqueMagnitude = Random.Range(weaponParams.RecoilTorqueMinDegrees, weaponParams.RecoilTorqueMaxDegrees);
             float torqueSign;
 
             if (Random.value < TorqueSignThreshold)

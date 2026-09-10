@@ -15,6 +15,13 @@ namespace PistolPanic.Core
             RecoilTorqueMinDegrees = weaponConfig.RecoilTorqueMinDegrees;
             RecoilTorqueMaxDegrees = weaponConfig.RecoilTorqueMaxDegrees;
             BulletSpawnOffsetUnits = weaponConfig.BulletSpawnOffsetUnits;
+            DisplayName = weaponConfig.DisplayName;
+            FirePattern = weaponConfig.FirePattern;
+            BurstCount = weaponConfig.BurstCount;
+            BurstIntervalSeconds = weaponConfig.BurstIntervalSeconds;
+            PelletCount = weaponConfig.PelletCount;
+            SpreadAngleDegrees = weaponConfig.SpreadAngleDegrees;
+            PelletDamageMultiplier = weaponConfig.PelletDamageMultiplier;
         }
 
         public float Damage { get; }
@@ -38,5 +45,19 @@ namespace PistolPanic.Core
         public float RecoilTorqueMaxDegrees { get; }
 
         public float BulletSpawnOffsetUnits { get; }
+
+        public string DisplayName { get; }
+
+        public FirePattern FirePattern { get; }
+
+        public int BurstCount { get; }
+
+        public float BurstIntervalSeconds { get; }
+
+        public int PelletCount { get; }
+
+        public float SpreadAngleDegrees { get; }
+
+        public float PelletDamageMultiplier { get; }
     }
 }

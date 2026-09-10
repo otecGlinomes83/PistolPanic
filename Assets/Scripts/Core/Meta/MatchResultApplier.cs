@@ -44,6 +44,7 @@ namespace PistolPanic.Meta
             int reward = _economyService.GetVictoryReward(_progressService.CurrentLevel);
 
             _progressService.AdvanceLevel();
+            _economyService.AddMoney(reward);
 
             MatchFinished?.Invoke(new MatchResult(DuelPhase.Victory, reward));
         }

@@ -26,6 +26,9 @@ namespace PistolPanic.Presentation
         [SerializeField]
         private EnemyConfig _enemyConfig = null;
 
+        [SerializeField]
+        private EnemyCatalog _enemyCatalog = null;
+
         protected override void Configure(IContainerBuilder builder)
         {
             if (Parent == null)
@@ -35,13 +38,13 @@ namespace PistolPanic.Presentation
                 return;
             }
 
-            Debug.Log("Scope: Configure GameLifetimeScope, mapConfig=" + (_mapConfig != null) + " weaponConfig=" + (_weaponConfig != null) + " explosionConfig=" + (_explosionConfig != null) + " physicsConfig=" + (_physicsConfig != null) + " playerConfig=" + (_playerConfig != null) + " enemyConfig=" + (_enemyConfig != null));
+            Debug.Log("Scope: Configure GameLifetimeScope, mapConfig=" + (_mapConfig != null) + " weaponConfig=" + (_weaponConfig != null) + " explosionConfig=" + (_explosionConfig != null) + " physicsConfig=" + (_physicsConfig != null) + " playerConfig=" + (_playerConfig != null) + " enemyConfig=" + (_enemyConfig != null) + " enemyCatalog=" + (_enemyCatalog != null));
 
-            bool hasAllConfigs = _mapConfig != null && _weaponConfig != null && _explosionConfig != null && _physicsConfig != null && _playerConfig != null && _enemyConfig != null;
+            bool hasAllConfigs = _mapConfig != null && _weaponConfig != null && _explosionConfig != null && _physicsConfig != null && _playerConfig != null && _enemyConfig != null && _enemyCatalog != null;
 
             if (hasAllConfigs == false)
             {
-                Debug.LogError("GameLifetimeScope: configs are not assigned. Create MapConfig/WeaponConfig/ExplosionConfig/PhysicsConfig/PlayerConfig/EnemyConfig (Create → PistolPanic) in Assets/Configs and assign on GameScope in Game scene.");
+                Debug.LogError("GameLifetimeScope: configs are not assigned. Create MapConfig/WeaponConfig/ExplosionConfig/PhysicsConfig/PlayerConfig/EnemyConfig/EnemyCatalog (Create → PistolPanic) in Assets/Configs and assign on GameScope in Game scene.");
 
                 return;
             }
@@ -52,8 +55,10 @@ namespace PistolPanic.Presentation
             builder.RegisterInstance(_physicsConfig);
             builder.RegisterInstance(_playerConfig);
             builder.RegisterInstance(_enemyConfig);
-            builder.RegisterInstance(new WeaponParams(_weaponConfig));
+            builder.RegisterInstance(_enemyCatalog);
 
+            builder.Register<PlayerWeaponProvider>(Lifetime.Scoped);
+            builder.Register<EnemyTypeProvider>(Lifetime.Scoped);
             builder.Register<CollisionMath>(Lifetime.Scoped);
             builder.Register<DuelFlow>(Lifetime.Scoped);
             builder.Register<MovementSystem>(Lifetime.Scoped);
@@ -70,7 +75,9 @@ namespace PistolPanic.Presentation
             builder.RegisterComponentOnNewGameObject<InputReader>(Lifetime.Scoped, "InputReader").As<IPlayerInput>();
             builder.RegisterComponentOnNewGameObject<ArenaView>(Lifetime.Scoped, "ArenaView");
             builder.RegisterComponentOnNewGameObject<BulletPool>(Lifetime.Scoped, "BulletPool").As<IBulletPool>();
+            builder.RegisterComponentOnNewGameObject<FxPool>(Lifetime.Scoped, "FxPool");
             builder.RegisterComponentOnNewGameObject<ViewBinder>(Lifetime.Scoped, "ViewBinder");
+            builder.RegisterComponentOnNewGameObject<HudView>(Lifetime.Scoped, "HudView");
             builder.RegisterComponentOnNewGameObject<DuelResultOverlayView>(Lifetime.Scoped, "DuelResultOverlay");
             builder.RegisterComponentOnNewGameObject<GameplayLifecyclePresenter>(Lifetime.Scoped, "GameplayLifecyclePresenter");
 #if UNITY_EDITOR
@@ -87,7 +94,9 @@ namespace PistolPanic.Presentation
             resolver.Resolve<SimulationDriver>();
             resolver.Resolve<IPlayerInput>();
             resolver.Resolve<ArenaView>();
+            resolver.Resolve<FxPool>();
             resolver.Resolve<ViewBinder>();
+            resolver.Resolve<HudView>();
             resolver.Resolve<DuelResultOverlayView>();
             resolver.Resolve<GameplayLifecyclePresenter>();
 #if UNITY_EDITOR

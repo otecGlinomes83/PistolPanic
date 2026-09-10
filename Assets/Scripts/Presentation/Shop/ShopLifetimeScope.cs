@@ -18,6 +18,15 @@ namespace PistolPanic.Presentation
             Debug.Log("Scope: Configure ShopLifetimeScope");
 
             builder.RegisterComponentInHierarchy<SceneSwapDebugView>();
+
+            builder.RegisterComponentOnNewGameObject<ShopWeaponsView>(Lifetime.Scoped, "ShopWeaponsView");
+
+            builder.RegisterBuildCallback(ActivateShopView);
+        }
+
+        private void ActivateShopView(IObjectResolver resolver)
+        {
+            resolver.Resolve<ShopWeaponsView>();
         }
     }
 }

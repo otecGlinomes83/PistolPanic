@@ -240,6 +240,7 @@ MonoBehaviour:
   _physicsConfig: {fileID: 11400000, guid: c96d12c9289538a4794aff8e3d8b2e08, type: 2}
   _playerConfig: {fileID: 11400000, guid: b5314b19d76e8f24fac3a1170604dc13, type: 2}
   _enemyConfig: {fileID: 11400000, guid: 3125ea62160d41949a3517fe24093ee9, type: 2}
+  _enemyCatalog: {fileID: 11400000, guid: ac69e8720569a57e3ad741af2419803a, type: 2}
 --- !u!4 &865597423
 Transform:
   m_ObjectHideFlags: 0

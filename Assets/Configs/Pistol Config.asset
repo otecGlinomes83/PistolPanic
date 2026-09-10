@@ -23,3 +23,10 @@ MonoBehaviour:
   _recoilTorqueMinDegrees: 30
   _recoilTorqueMaxDegrees: 90
   _bulletSpawnOffsetUnits: 0.05
+  _displayName: Пистолет
+  _firePattern: 0
+  _burstCount: 3
+  _burstIntervalSeconds: 0.12
+  _pelletCount: 6
+  _spreadAngleDegrees: 30
+  _pelletDamageMultiplier: 0.34

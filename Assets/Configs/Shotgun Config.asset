@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 886b085d2396d1e4298008d99ef382b8, type: 3}
+  m_Name: Shotgun Config
+  m_EditorClassIdentifier:
+  _damage: 1
+  _cooldownSeconds: 1.3
+  _magazineSize: 4
+  _regenDelaySeconds: 3
+  _fullReloadSeconds: 3.5
+  _bulletSpeed: 12
+  _bulletRadius: 0.1
+  _recoilImpulse: 3.5
+  _recoilTorqueMinDegrees: 60
+  _recoilTorqueMaxDegrees: 160
+  _bulletSpawnOffsetUnits: 0.05
+  _displayName: Дробовик
+  _firePattern: 2
+  _burstCount: 3
+  _burstIntervalSeconds: 0.12
+  _pelletCount: 6
+  _spreadAngleDegrees: 32
+  _pelletDamageMultiplier: 0.34

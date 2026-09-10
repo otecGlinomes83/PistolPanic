@@ -12,6 +12,9 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly ISceneLoader _sceneLoader = null;
 
+        [Inject]
+        private readonly AudioService _audioService = null;
+
         [SerializeField]
         private Button _swapButton = null;
 
@@ -40,6 +43,7 @@ namespace PistolPanic.Presentation
 
         private void OnSwapButtonClicked()
         {
+            _audioService.PlaySfx(SfxType.UiClick);
             LoadTargetSceneAsync().Forget();
         }
 

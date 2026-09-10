@@ -14,7 +14,7 @@ namespace PistolPanic.Presentation
         [Inject]
         private readonly SpriteFactory _spriteFactory = null;
 
-        public void Spawn(int bulletId, Vector2 position, float diameter)
+        public void Spawn(int bulletId, Vector2 position, float diameter, Color color)
         {
             BulletView view;
 
@@ -27,7 +27,7 @@ namespace PistolPanic.Presentation
                 view = CreateView();
             }
 
-            view.Show(position, diameter);
+            view.Show(position, diameter, color);
             _activeViews.Add(bulletId, view);
         }
 
@@ -60,7 +60,7 @@ namespace PistolPanic.Presentation
             viewObject.SetActive(false);
 
             BulletView view = viewObject.AddComponent<BulletView>();
-            view.Initialize(_spriteFactory.GetCircleSprite(), new Color(1f, 0.85f, 0.3f, 1f));
+            view.Initialize(_spriteFactory.GetCircleSprite());
 
             return view;
         }

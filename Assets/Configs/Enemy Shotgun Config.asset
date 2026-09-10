@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b71c4e537820a09c252f1432bcc6587, type: 3}
+  m_Name: Enemy Shotgun Config
+  m_EditorClassIdentifier:
+  _displayName: Дробовик
+  _weaponConfig: {fileID: 11400000, guid: 3e75f80fc8c4f3f75c178602a9050dcd, type: 2}
+  _gunColor: {r: 0.6, g: 0.35, b: 0.8, a: 1}
+  _stageColors:
+  - {r: 0.85, g: 0.35, b: 0.3, a: 1}
+  - {r: 0.75, g: 0.25, b: 0.2, a: 1}
+  - {r: 0.6, g: 0.15, b: 0.1, a: 1}
